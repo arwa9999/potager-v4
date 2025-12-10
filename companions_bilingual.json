@@ -1,0 +1,1214 @@
+[
+  {
+    "key": "tomato",
+    "fr": "Tomate",
+    "nl": "Tomaat",
+    "family": "solanaceae",
+    "good": [
+      "basil",
+      "borage",
+      "carrot",
+      "chive",
+      "garlic",
+      "lettuce",
+      "marigold",
+      "nasturtium",
+      "onion",
+      "parsley"
+    ],
+    "bad": [
+      "broccoli",
+      "cabbage",
+      "cauliflower",
+      "corn",
+      "fennel",
+      "kale",
+      "potato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "hornworm",
+      "whitefly"
+    ],
+    "notes_fr": "Éviter proximité pommes de terre (risque mildiou partagé). Aime basilic, œillet d’Inde (Tagetes), capucine, bourrache.",
+    "notes_nl": "Vermijd nabijheid van aardappelen (gedeeld risico op meeldauw). Gaat goed met basilicum, afrikaantje (Tagetes), oost‑Indische kers, bernagie."
+  },
+  {
+    "key": "potato",
+    "fr": "Pomme de terre",
+    "nl": "Aardappel",
+    "family": "solanaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "cabbage",
+      "marigold",
+      "nasturtium"
+    ],
+    "bad": [
+      "chili",
+      "cucumber",
+      "eggplant",
+      "pepper",
+      "pumpkin",
+      "sunflower",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "colorado_beetle"
+    ],
+    "notes_fr": "Les haricots aident contre le doryphore. Éviter solanacées (tomate, aubergine, piment).",
+    "notes_nl": "Bonen helpen tegen de coloradokever. Vermijd andere nachtschaden (tomaat, aubergine, peper)."
+  },
+  {
+    "key": "eggplant",
+    "fr": "Aubergine",
+    "nl": "Aubergine",
+    "family": "solanaceae",
+    "good": [
+      "basil",
+      "bean_bush",
+      "bean_pole",
+      "marigold",
+      "nasturtium"
+    ],
+    "bad": [
+      "potato"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Apprécie la chaleur; supporte bien les compagnons aromatiques (basilic).",
+    "notes_nl": "Houdt van warmte; gaat goed samen met aromaten (basilicum)."
+  },
+  {
+    "key": "pepper",
+    "fr": "Poivron",
+    "nl": "Paprika",
+    "family": "solanaceae",
+    "good": [
+      "basil",
+      "carrot",
+      "marigold",
+      "nasturtium",
+      "onion"
+    ],
+    "bad": [
+      "fennel",
+      "potato"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Basilic améliore souvent la vigueur. Éviter fenouil.",
+    "notes_nl": "Basilicum bevordert vaak de groei. Vermijd venkel."
+  },
+  {
+    "key": "chili",
+    "fr": "Piment/Chili",
+    "nl": "Peper/Chili",
+    "family": "solanaceae",
+    "good": [
+      "basil",
+      "carrot",
+      "marigold",
+      "nasturtium",
+      "onion"
+    ],
+    "bad": [
+      "fennel",
+      "potato"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "cucumber",
+    "fr": "Concombre",
+    "nl": "Komkommer",
+    "family": "cucurbitaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "borage",
+      "corn",
+      "dill",
+      "marigold",
+      "nasturtium",
+      "radish"
+    ],
+    "bad": [
+      "mint",
+      "potato",
+      "rosemary",
+      "sage"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "mites",
+      "slugs"
+    ],
+    "notes_fr": "Les capucines et tagètes aident contre pucerons; radis repoussent parfois les coléoptères du concombre. Éviter sauge/romarin/menthe collés.",
+    "notes_nl": "Oost‑Indische kers en afrikaantjes helpen tegen bladluizen; radijs weert soms komkommerkevers. Vermijd salie/rozemarijn/munt vlakbij."
+  },
+  {
+    "key": "zucchini",
+    "fr": "Courgette",
+    "nl": "Courgette",
+    "family": "cucurbitaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "borage",
+      "corn",
+      "dill",
+      "marigold",
+      "nasturtium",
+      "radish"
+    ],
+    "bad": [
+      "mint",
+      "potato",
+      "rosemary",
+      "sage"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "mites",
+      "slugs"
+    ],
+    "notes_fr": "Les capucines et tagètes aident contre pucerons; radis repoussent parfois les coléoptères du concombre. Éviter sauge/romarin/menthe collés.",
+    "notes_nl": "Oost‑Indische kers en afrikaantjes helpen tegen bladluizen; radijs weert soms komkommerkevers. Vermijd salie/rozemarijn/munt vlakbij."
+  },
+  {
+    "key": "pumpkin",
+    "fr": "Citrouille/Potiron",
+    "nl": "Pompoen",
+    "family": "cucurbitaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "borage",
+      "corn",
+      "dill",
+      "marigold",
+      "nasturtium",
+      "radish"
+    ],
+    "bad": [
+      "mint",
+      "potato",
+      "rosemary",
+      "sage"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "mites",
+      "slugs"
+    ],
+    "notes_fr": "Les capucines et tagètes aident contre pucerons; radis repoussent parfois les coléoptères du concombre. Éviter sauge/romarin/menthe collés.",
+    "notes_nl": "Oost‑Indische kers en afrikaantjes helpen tegen bladluizen; radijs weert soms komkommerkevers. Vermijd salie/rozemarijn/munt vlakbij."
+  },
+  {
+    "key": "squash",
+    "fr": "Courge",
+    "nl": "Kalebas",
+    "family": "cucurbitaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "borage",
+      "corn",
+      "dill",
+      "marigold",
+      "nasturtium",
+      "radish"
+    ],
+    "bad": [
+      "mint",
+      "potato",
+      "rosemary",
+      "sage"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "mites",
+      "slugs"
+    ],
+    "notes_fr": "Les capucines et tagètes aident contre pucerons; radis repoussent parfois les coléoptères du concombre. Éviter sauge/romarin/menthe collés.",
+    "notes_nl": "Oost‑Indische kers en afrikaantjes helpen tegen bladluizen; radijs weert soms komkommerkevers. Vermijd salie/rozemarijn/munt vlakbij."
+  },
+  {
+    "key": "melon",
+    "fr": "Melon",
+    "nl": "Meloen",
+    "family": "cucurbitaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "borage",
+      "corn",
+      "dill",
+      "marigold",
+      "nasturtium",
+      "radish"
+    ],
+    "bad": [
+      "mint",
+      "potato",
+      "rosemary",
+      "sage"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "mites",
+      "slugs"
+    ],
+    "notes_fr": "Les capucines et tagètes aident contre pucerons; radis repoussent parfois les coléoptères du concombre. Éviter sauge/romarin/menthe collés.",
+    "notes_nl": "Oost‑Indische kers en afrikaantjes helpen tegen bladluizen; radijs weert soms komkommerkevers. Vermijd salie/rozemarijn/munt vlakbij."
+  },
+  {
+    "key": "cabbage",
+    "fr": "Chou cabus",
+    "nl": "Kool",
+    "family": "brassicaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "celery",
+      "chamomile",
+      "dill",
+      "garlic",
+      "marigold",
+      "mint",
+      "nasturtium",
+      "onion",
+      "pea",
+      "sage",
+      "thyme"
+    ],
+    "bad": [
+      "fennel",
+      "strawberry",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "cabbage_moth",
+      "flea_beetle"
+    ],
+    "notes_fr": "Apprécie alliacées, céleri, aromatiques (thym, sauge). Capucine pour détourner pucerons.",
+    "notes_nl": "Houdt van lookachtigen, selder en aromaten (tijm, salie). Oost‑Indische kers als lokplant voor bladluizen."
+  },
+  {
+    "key": "cauliflower",
+    "fr": "Chou-fleur",
+    "nl": "Bloemkool",
+    "family": "brassicaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "celery",
+      "chamomile",
+      "dill",
+      "garlic",
+      "marigold",
+      "mint",
+      "nasturtium",
+      "onion",
+      "pea",
+      "sage",
+      "thyme"
+    ],
+    "bad": [
+      "fennel",
+      "strawberry",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "cabbage_moth",
+      "flea_beetle"
+    ],
+    "notes_fr": "Apprécie alliacées, céleri, aromatiques (thym, sauge). Capucine pour détourner pucerons.",
+    "notes_nl": "Houdt van lookachtigen, selder en aromaten (tijm, salie). Oost‑Indische kers als lokplant voor bladluizen."
+  },
+  {
+    "key": "broccoli",
+    "fr": "Brocoli",
+    "nl": "Broccoli",
+    "family": "brassicaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "celery",
+      "chamomile",
+      "dill",
+      "garlic",
+      "marigold",
+      "mint",
+      "nasturtium",
+      "onion",
+      "pea",
+      "sage",
+      "thyme"
+    ],
+    "bad": [
+      "fennel",
+      "strawberry",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "cabbage_moth",
+      "flea_beetle"
+    ],
+    "notes_fr": "Apprécie alliacées, céleri, aromatiques (thym, sauge). Capucine pour détourner pucerons.",
+    "notes_nl": "Houdt van lookachtigen, selder en aromaten (tijm, salie). Oost‑Indische kers als lokplant voor bladluizen."
+  },
+  {
+    "key": "kale",
+    "fr": "Chou frisé/Kale",
+    "nl": "Boerenkool",
+    "family": "brassicaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "celery",
+      "chamomile",
+      "dill",
+      "garlic",
+      "marigold",
+      "mint",
+      "nasturtium",
+      "onion",
+      "pea",
+      "sage",
+      "thyme"
+    ],
+    "bad": [
+      "fennel",
+      "strawberry",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "cabbage_moth",
+      "flea_beetle"
+    ],
+    "notes_fr": "Apprécie alliacées, céleri, aromatiques (thym, sauge). Capucine pour détourner pucerons.",
+    "notes_nl": "Houdt van lookachtigen, selder en aromaten (tijm, salie). Oost‑Indische kers als lokplant voor bladluizen."
+  },
+  {
+    "key": "kohlrabi",
+    "fr": "Chou-rave",
+    "nl": "Koolrabi",
+    "family": "brassicaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "celery",
+      "chamomile",
+      "dill",
+      "garlic",
+      "marigold",
+      "mint",
+      "nasturtium",
+      "onion",
+      "pea",
+      "sage",
+      "thyme"
+    ],
+    "bad": [
+      "fennel",
+      "strawberry",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "cabbage_moth",
+      "flea_beetle"
+    ],
+    "notes_fr": "Apprécie alliacées, céleri, aromatiques (thym, sauge). Capucine pour détourner pucerons.",
+    "notes_nl": "Houdt van lookachtigen, selder en aromaten (tijm, salie). Oost‑Indische kers als lokplant voor bladluizen."
+  },
+  {
+    "key": "radish",
+    "fr": "Radis",
+    "nl": "Radijs",
+    "family": "brassicaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "celery",
+      "chamomile",
+      "dill",
+      "garlic",
+      "marigold",
+      "mint",
+      "nasturtium",
+      "onion",
+      "pea",
+      "sage",
+      "thyme"
+    ],
+    "bad": [
+      "fennel",
+      "strawberry",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "cabbage_moth",
+      "flea_beetle"
+    ],
+    "notes_fr": "Apprécie alliacées, céleri, aromatiques (thym, sauge). Capucine pour détourner pucerons.",
+    "notes_nl": "Houdt van lookachtigen, selder en aromaten (tijm, salie). Oost‑Indische kers als lokplant voor bladluizen."
+  },
+  {
+    "key": "turnip",
+    "fr": "Navet",
+    "nl": "Knolraap",
+    "family": "brassicaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "celery",
+      "chamomile",
+      "dill",
+      "garlic",
+      "marigold",
+      "mint",
+      "nasturtium",
+      "onion",
+      "pea",
+      "sage",
+      "thyme"
+    ],
+    "bad": [
+      "fennel",
+      "strawberry",
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "cabbage_moth",
+      "flea_beetle"
+    ],
+    "notes_fr": "Apprécie alliacées, céleri, aromatiques (thym, sauge). Capucine pour détourner pucerons.",
+    "notes_nl": "Houdt van lookachtigen, selder en aromaten (tijm, salie). Oost‑Indische kers als lokplant voor bladluizen."
+  },
+  {
+    "key": "bean_bush",
+    "fr": "Haricot nain",
+    "nl": "Struikboon",
+    "family": "fabaceae",
+    "good": [
+      "cabbage",
+      "celery",
+      "corn",
+      "cucumber",
+      "potato",
+      "strawberry"
+    ],
+    "bad": [
+      "fennel",
+      "garlic",
+      "leek",
+      "onion",
+      "shallot",
+      "sunflower"
+    ],
+    "attract": [],
+    "repel": [
+      "colorado_beetle"
+    ],
+    "notes_fr": "Éviter la proximité des alliacées. Bon avec maïs, cucurbitacées, choux.",
+    "notes_nl": "Vermijd lookachtigen. Goed met maïs, komkommerachtigen, kolen."
+  },
+  {
+    "key": "bean_pole",
+    "fr": "Haricot à rames",
+    "nl": "Stokboon",
+    "family": "fabaceae",
+    "good": [
+      "corn",
+      "cucumber",
+      "squash"
+    ],
+    "bad": [
+      "beet",
+      "fennel",
+      "garlic",
+      "leek",
+      "onion",
+      "shallot",
+      "sunflower"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Classique «Trois Sœurs» avec maïs + courges.",
+    "notes_nl": "Klassieke ‘Drie Zusters’ met maïs + pompoen."
+  },
+  {
+    "key": "pea",
+    "fr": "Pois",
+    "nl": "Erwt",
+    "family": "fabaceae",
+    "good": [
+      "carrot",
+      "cucumber",
+      "lettuce",
+      "radish",
+      "spinach",
+      "turnip"
+    ],
+    "bad": [
+      "fennel",
+      "garlic",
+      "leek",
+      "onion",
+      "shallot"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "fava",
+    "fr": "Fève",
+    "nl": "Tuinboon",
+    "family": "fabaceae",
+    "good": [
+      "cabbage",
+      "corn",
+      "potato",
+      "spinach"
+    ],
+    "bad": [
+      "fennel",
+      "garlic",
+      "leek",
+      "onion",
+      "shallot"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "onion",
+    "fr": "Oignon",
+    "nl": "Ui",
+    "family": "alliaceae",
+    "good": [
+      "beet",
+      "carrot",
+      "lettuce",
+      "strawberry"
+    ],
+    "bad": [
+      "bean_bush",
+      "bean_pole",
+      "fava",
+      "pea"
+    ],
+    "attract": [],
+    "repel": [
+      "carrot_fly"
+    ],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "garlic",
+    "fr": "Ail",
+    "nl": "Knoflook",
+    "family": "alliaceae",
+    "good": [
+      "carrot",
+      "lettuce",
+      "strawberry",
+      "tomato"
+    ],
+    "bad": [
+      "bean_bush",
+      "bean_pole",
+      "fava",
+      "pea"
+    ],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "mites",
+      "slugs"
+    ],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "leek",
+    "fr": "Poireau",
+    "nl": "Prei",
+    "family": "alliaceae",
+    "good": [
+      "carrot",
+      "celery",
+      "strawberry"
+    ],
+    "bad": [
+      "bean_bush",
+      "bean_pole",
+      "fava",
+      "pea"
+    ],
+    "attract": [],
+    "repel": [
+      "carrot_fly"
+    ],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "shallot",
+    "fr": "Échalote",
+    "nl": "Sjalot",
+    "family": "alliaceae",
+    "good": [
+      "beet",
+      "carrot",
+      "strawberry"
+    ],
+    "bad": [
+      "bean_bush",
+      "bean_pole",
+      "fava",
+      "pea"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "carrot",
+    "fr": "Carotte",
+    "nl": "Wortel",
+    "family": "apiaceae",
+    "good": [
+      "chive",
+      "leek",
+      "lettuce",
+      "onion",
+      "pea",
+      "radish",
+      "rosemary",
+      "sage"
+    ],
+    "bad": [
+      "dill",
+      "fennel"
+    ],
+    "attract": [],
+    "repel": [
+      "carrot_fly"
+    ],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "celery",
+    "fr": "Céleri",
+    "nl": "Selder",
+    "family": "apiaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "cabbage",
+      "onion",
+      "tomato"
+    ],
+    "bad": [
+      "fennel"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "fennel",
+    "fr": "Fenouil",
+    "nl": "Venkel",
+    "family": "apiaceae",
+    "good": [],
+    "bad": [
+      "bean_bush",
+      "bean_pole",
+      "beet",
+      "broccoli",
+      "cabbage",
+      "carrot",
+      "cauliflower",
+      "celery",
+      "chard",
+      "chili",
+      "cucumber",
+      "eggplant",
+      "fava",
+      "garlic",
+      "kale",
+      "kohlrabi",
+      "leek",
+      "lettuce",
+      "melon",
+      "onion",
+      "pea",
+      "pepper",
+      "potato",
+      "pumpkin",
+      "shallot",
+      "spinach",
+      "squash",
+      "strawberry",
+      "tomato",
+      "zucchini"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Allélopathie forte: tenir à distance du potager.",
+    "notes_nl": "Sterke allelopathie: op afstand van de moestuin houden."
+  },
+  {
+    "key": "dill",
+    "fr": "Aneth",
+    "nl": "Dille",
+    "family": "apiaceae",
+    "good": [
+      "cabbage",
+      "cucumber",
+      "lettuce",
+      "onion"
+    ],
+    "bad": [
+      "carrot"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "coriander",
+    "fr": "Coriandre",
+    "nl": "Koriander",
+    "family": "apiaceae",
+    "good": [
+      "broccoli",
+      "cabbage",
+      "cauliflower",
+      "lettuce",
+      "onion",
+      "spinach"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Attire auxiliaires; utile en lisière.",
+    "notes_nl": "Lokt nuttigen; nuttig langs randen."
+  },
+  {
+    "key": "parsley",
+    "fr": "Persil",
+    "nl": "Peterselie",
+    "family": "apiaceae",
+    "good": [
+      "chive",
+      "onion",
+      "tomato"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "beet",
+    "fr": "Betterave",
+    "nl": "Biet",
+    "family": "chenopodiaceae",
+    "good": [
+      "cabbage",
+      "lettuce",
+      "onion"
+    ],
+    "bad": [
+      "bean_pole"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "chard",
+    "fr": "Blette/Bettes",
+    "nl": "Snijbiet",
+    "family": "chenopodiaceae",
+    "good": [
+      "bean_bush",
+      "cabbage",
+      "onion"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "spinach",
+    "fr": "Épinard",
+    "nl": "Spinazie",
+    "family": "chenopodiaceae",
+    "good": [
+      "pea",
+      "strawberry"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "lettuce",
+    "fr": "Laitue",
+    "nl": "Sla",
+    "family": "asteraceae",
+    "good": [
+      "carrot",
+      "cucumber",
+      "onion",
+      "radish",
+      "strawberry"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "sunflower",
+    "fr": "Tournesol",
+    "nl": "Zonnebloem",
+    "family": "asteraceae",
+    "good": [
+      "bean_pole",
+      "cucumber",
+      "squash"
+    ],
+    "bad": [
+      "bean_bush",
+      "bean_pole",
+      "potato"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Peut servir de tuteur vivant. Attention à l’allélopathie envers légumineuses.",
+    "notes_nl": "Kan als levende steun dienen. Let op allelopathie t.o.v. peulvruchten."
+  },
+  {
+    "key": "marigold",
+    "fr": "Œillet d'Inde (Tagetes)",
+    "nl": "Afrikaantje (Tagetes)",
+    "family": "asteraceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "cucumber",
+      "eggplant",
+      "pepper",
+      "potato",
+      "squash",
+      "tomato",
+      "zucchini"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [
+      "aphids",
+      "nematodes",
+      "whitefly"
+    ],
+    "notes_fr": "Tagetes: action nématicide reconnue au potager.",
+    "notes_nl": "Tagetes: bekend nématicide in de moestuin."
+  },
+  {
+    "key": "calendula",
+    "fr": "Souci (Calendula)",
+    "nl": "Goudsbloem (Calendula)",
+    "family": "asteraceae",
+    "good": [
+      "broccoli",
+      "cabbage",
+      "cauliflower",
+      "lettuce",
+      "onion",
+      "tomato"
+    ],
+    "bad": [],
+    "attract": [
+      "aphids"
+    ],
+    "repel": [],
+    "notes_fr": "Souci attire auxiliaires; tolère pucerons comme plantes-pièges.",
+    "notes_nl": "Goudsbloem lokt nuttigen; kan als lokplant voor bladluizen dienen."
+  },
+  {
+    "key": "chamomile",
+    "fr": "Camomille",
+    "nl": "Kamille",
+    "family": "asteraceae",
+    "good": [
+      "broccoli",
+      "cabbage",
+      "cauliflower",
+      "onion"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Favorise la vigueur générale, utile en bordure.",
+    "notes_nl": "Verbetert algemene vitaliteit, nuttig aan randen."
+  },
+  {
+    "key": "yarrow",
+    "fr": "Achillée millefeuille",
+    "nl": "Duizendblad",
+    "family": "asteraceae",
+    "good": [
+      "cabbage",
+      "lettuce",
+      "onion",
+      "strawberry",
+      "tomato"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Améliore la biodiversité; attire Syrphes/parasitoïdes.",
+    "notes_nl": "Verhoogt biodiversiteit; lokt zweefvliegen/parasitoïden."
+  },
+  {
+    "key": "basil",
+    "fr": "Basilic",
+    "nl": "Basilicum",
+    "family": "lamiaceae",
+    "good": [
+      "chili",
+      "pepper",
+      "tomato"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Améliore goût et vigueur de la tomate; répulsif léger.",
+    "notes_nl": "Verbetert smaak en vitaliteit van tomaat; lichte afweer."
+  },
+  {
+    "key": "thyme",
+    "fr": "Thym",
+    "nl": "Tijm",
+    "family": "lamiaceae",
+    "good": [
+      "cabbage",
+      "strawberry"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [
+      "cabbage_moth"
+    ],
+    "notes_fr": "Réduit attaques de piérides.",
+    "notes_nl": "Minder koolwitjes."
+  },
+  {
+    "key": "rosemary",
+    "fr": "Romarin",
+    "nl": "Rozemarijn",
+    "family": "lamiaceae",
+    "good": [
+      "cabbage",
+      "carrot"
+    ],
+    "bad": [
+      "cucumber"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Repousse mouche de la carotte; éviter près des cucurbitacées.",
+    "notes_nl": "Weert wortelvlieg; vermijd bij komkommerachtigen."
+  },
+  {
+    "key": "sage",
+    "fr": "Sauge",
+    "nl": "Salie",
+    "family": "lamiaceae",
+    "good": [
+      "cabbage",
+      "carrot"
+    ],
+    "bad": [
+      "cucumber"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Réduit mouches; éviter près du concombre.",
+    "notes_nl": "Minder vliegen; vermijd nabij komkommer."
+  },
+  {
+    "key": "mint",
+    "fr": "Menthe",
+    "nl": "Munt",
+    "family": "lamiaceae",
+    "good": [
+      "cabbage",
+      "lettuce"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Répulsive mais envahissante; cultiver en pot enterré.",
+    "notes_nl": "Afwerend maar woekerend; in pot houden."
+  },
+  {
+    "key": "lavender",
+    "fr": "Lavande",
+    "nl": "Lavendel",
+    "family": "lamiaceae",
+    "good": [
+      "cabbage",
+      "lettuce"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Repousse papillons sur brassicacées.",
+    "notes_nl": "Weert vlinders op kolen."
+  },
+  {
+    "key": "borage",
+    "fr": "Bourrache",
+    "nl": "Bernagie/Komkommerkruid",
+    "family": "boraginaceae",
+    "good": [
+      "cucumber",
+      "squash",
+      "strawberry",
+      "tomato"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Très mellifère; améliore vigueur des fraisiers et des tomates.",
+    "notes_nl": "Sterk nectarplanten; bevordert aardbeien en tomaten."
+  },
+  {
+    "key": "corn",
+    "fr": "Maïs",
+    "nl": "Maïs",
+    "family": "poaceae",
+    "good": [
+      "bean_bush",
+      "bean_pole",
+      "cucumber",
+      "melon",
+      "pea",
+      "squash"
+    ],
+    "bad": [
+      "tomato"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "Support pour haricots à rames; trio «Trois Sœurs».",
+    "notes_nl": "Steun voor stokbonen; trio ‘Drie Zusters’."
+  },
+  {
+    "key": "strawberry",
+    "fr": "Fraisier",
+    "nl": "Aardbei",
+    "family": "rosaceae",
+    "good": [
+      "borage",
+      "garlic",
+      "lettuce",
+      "onion",
+      "spinach",
+      "thyme"
+    ],
+    "bad": [
+      "broccoli",
+      "cabbage",
+      "cauliflower",
+      "kale"
+    ],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "chive",
+    "fr": "Ciboulette",
+    "nl": "Bieslook",
+    "family": "alliaceae",
+    "good": [
+      "carrot",
+      "strawberry",
+      "tomato"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [
+      "aphids"
+    ],
+    "notes_fr": "",
+    "notes_nl": ""
+  },
+  {
+    "key": "parsley",
+    "fr": "Persil",
+    "nl": "Peterselie",
+    "family": "apiaceae",
+    "good": [
+      "chive",
+      "onion",
+      "tomato"
+    ],
+    "bad": [],
+    "attract": [],
+    "repel": [],
+    "notes_fr": "",
+    "notes_nl": ""
+  }
+]

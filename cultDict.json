@@ -1,0 +1,573 @@
+{
+  "tomate": {
+    "fr": "Tomate",
+    "nl": "Tomaat",
+    "family": "solanaceae",
+    "syn": [
+      "tomates",
+      "tomate cerise",
+      "tomate-cerise",
+      "tomaatjes",
+      "kerstomaat"
+    ]
+  },
+  "pomme_de_terre": {
+    "fr": "Pomme de terre",
+    "nl": "Aardappel",
+    "family": "solanaceae",
+    "syn": [
+      "patate",
+      "pommes de terre",
+      "aardappelen"
+    ]
+  },
+  "aubergine": {
+    "fr": "Aubergine",
+    "nl": "Aubergine",
+    "family": "solanaceae",
+    "syn": [
+      "eiervrucht"
+    ]
+  },
+  "poivron": {
+    "fr": "Poivron",
+    "nl": "Paprika",
+    "family": "solanaceae",
+    "syn": [
+      "piment doux",
+      "paprika zoet"
+    ]
+  },
+  "piment": {
+    "fr": "Piment (fort)",
+    "nl": "Peper (heet)",
+    "family": "solanaceae",
+    "syn": [
+      "piment fort",
+      "piment",
+      "chili",
+      "hete peper"
+    ]
+  },
+  "courgette": {
+    "fr": "Courgette",
+    "nl": "Courgette",
+    "family": "cucurbitaceae",
+    "syn": [
+      "zucchini",
+      "zucchini"
+    ]
+  },
+  "concombre": {
+    "fr": "Concombre",
+    "nl": "Komkommer",
+    "family": "cucurbitaceae",
+    "syn": [
+      "cornichon (frais)",
+      "augurk (vers)"
+    ]
+  },
+  "potiron": {
+    "fr": "Potiron / Courge",
+    "nl": "Pompoen",
+    "family": "cucurbitaceae",
+    "syn": [
+      "citrouille",
+      "courge",
+      "pompoen",
+      "kalebas"
+    ]
+  },
+  "butternut": {
+    "fr": "Courge butternut",
+    "nl": "Flespompoen",
+    "family": "cucurbitaceae",
+    "syn": [
+      "doubeurre",
+      "butternut"
+    ]
+  },
+  "melon": {
+    "fr": "Melon",
+    "nl": "Meloen",
+    "family": "cucurbitaceae",
+    "syn": []
+  },
+  "chou_blanc": {
+    "fr": "Chou blanc",
+    "nl": "Witte kool",
+    "family": "brassicaceae",
+    "syn": []
+  },
+  "chou_rouge": {
+    "fr": "Chou rouge",
+    "nl": "Rode kool",
+    "family": "brassicaceae",
+    "syn": []
+  },
+  "chou_fleur": {
+    "fr": "Chou-fleur",
+    "nl": "Bloemkool",
+    "family": "brassicaceae",
+    "syn": []
+  },
+  "brocoli": {
+    "fr": "Brocoli",
+    "nl": "Broccoli",
+    "family": "brassicaceae",
+    "syn": []
+  },
+  "chou_brx": {
+    "fr": "Chou de Bruxelles",
+    "nl": "Spruitkool",
+    "family": "brassicaceae",
+    "syn": [
+      "choux de Bruxelles",
+      "spruitjes"
+    ]
+  },
+  "chou_kale": {
+    "fr": "Chou kale",
+    "nl": "Boerenkool",
+    "family": "brassicaceae",
+    "syn": [
+      "kale",
+      "krulkool"
+    ]
+  },
+  "radis": {
+    "fr": "Radis",
+    "nl": "Radijs",
+    "family": "brassicaceae",
+    "syn": [
+      "radis de 18 jours",
+      "radijsjes"
+    ]
+  },
+  "navet": {
+    "fr": "Navet",
+    "nl": "Raap",
+    "family": "brassicaceae",
+    "syn": []
+  },
+  "roquette": {
+    "fr": "Roquette",
+    "nl": "Rucola",
+    "family": "brassicaceae",
+    "syn": [
+      "rucola",
+      "roquette sauvage",
+      "raketsla"
+    ]
+  },
+  "moutarde_blanche": {
+    "fr": "Moutarde blanche",
+    "nl": "Witte mosterd",
+    "family": "brassicaceae",
+    "syn": [
+      "sinapis alba",
+      "engrais vert moutarde",
+      "gele mosterd",
+      "groenbemester mosterd"
+    ]
+  },
+  "pakchoi": {
+    "fr": "Pakchoï",
+    "nl": "Paksoi",
+    "family": "brassicaceae",
+    "syn": [
+      "bok choy",
+      "pak-choï",
+      "pak choi"
+    ]
+  },
+  "haricot": {
+    "fr": "Haricot",
+    "nl": "Boontje",
+    "family": "fabaceae",
+    "syn": [
+      "haricot vert",
+      "haricots",
+      "sperzieboon",
+      "prinsessenboon",
+      "bonen"
+    ]
+  },
+  "pois": {
+    "fr": "Pois",
+    "nl": "Erwt",
+    "family": "fabaceae",
+    "syn": [
+      "pois mange-tout",
+      "pois doux",
+      "sugarsnap",
+      "peulerwt"
+    ]
+  },
+  "feve": {
+    "fr": "Fève",
+    "nl": "Tuinboon",
+    "family": "fabaceae",
+    "syn": [
+      "fève des marais",
+      "veldboon"
+    ]
+  },
+  "luzerne": {
+    "fr": "Luzerne",
+    "nl": "Luzerne",
+    "family": "fabaceae",
+    "syn": [
+      "alfalfa",
+      "engrais vert luzerne",
+      "alfalfa"
+    ]
+  },
+  "vesce": {
+    "fr": "Vesce",
+    "nl": "Veldwikke",
+    "family": "fabaceae",
+    "syn": [
+      "engrais vert vesce",
+      "wikke",
+      "groenbemester wikke"
+    ]
+  },
+  "trefle": {
+    "fr": "Trèfle",
+    "nl": "Klavertje",
+    "family": "fabaceae",
+    "syn": [
+      "trèfle incarnat",
+      "trèfle blanc",
+      "klaver",
+      "rode klaver",
+      "witte klaver"
+    ]
+  },
+  "oignon": {
+    "fr": "Oignon",
+    "nl": "Ui",
+    "family": "alliaceae",
+    "syn": [
+      "oignons",
+      "uien"
+    ]
+  },
+  "ail": {
+    "fr": "Ail",
+    "nl": "Knoflook",
+    "family": "alliaceae",
+    "syn": [
+      "ail d'automne",
+      "look"
+    ]
+  },
+  "poireau": {
+    "fr": "Poireau",
+    "nl": "Prei",
+    "family": "alliaceae",
+    "syn": [
+      "poireaux",
+      "prei"
+    ]
+  },
+  "ciboulette": {
+    "fr": "Ciboulette",
+    "nl": "Bieslook",
+    "family": "alliaceae",
+    "syn": []
+  },
+  "carotte": {
+    "fr": "Carotte",
+    "nl": "Wortel",
+    "family": "apiaceae",
+    "syn": [
+      "carottes",
+      "peen",
+      "worteltjes"
+    ]
+  },
+  "celeri_branche": {
+    "fr": "Céleri branche",
+    "nl": "Bleekselderij",
+    "family": "apiaceae",
+    "syn": [
+      "céleri",
+      "céleri en branche",
+      "selder",
+      "snijselderij"
+    ]
+  },
+  "celeri_rave": {
+    "fr": "Céleri-rave",
+    "nl": "Knolselderij",
+    "family": "apiaceae",
+    "syn": [
+      "céleri boule",
+      "knolselder"
+    ]
+  },
+  "fenouil": {
+    "fr": "Fenouil",
+    "nl": "Venkel",
+    "family": "apiaceae",
+    "syn": []
+  },
+  "persil": {
+    "fr": "Persil",
+    "nl": "Peterselie",
+    "family": "apiaceae",
+    "syn": [
+      "persil plat",
+      "persil frisé",
+      "bladpeterselie",
+      "krulpeterselie"
+    ]
+  },
+  "aneth": {
+    "fr": "Aneth",
+    "nl": "Dille",
+    "family": "apiaceae",
+    "syn": []
+  },
+  "cerfeuil": {
+    "fr": "Cerfeuil",
+    "nl": "Kervel",
+    "family": "apiaceae",
+    "syn": []
+  },
+  "liveche": {
+    "fr": "Livèche (céleri perpétuel)",
+    "nl": "Lavas",
+    "family": "apiaceae",
+    "syn": [
+      "ache des montagnes",
+      "maggi-kruid"
+    ]
+  },
+  "epinard": {
+    "fr": "Épinard",
+    "nl": "Spinazie",
+    "family": "chenopodiaceae",
+    "syn": []
+  },
+  "bette": {
+    "fr": "Bette (blette)",
+    "nl": "Snijbiet",
+    "family": "chenopodiaceae",
+    "syn": [
+      "blette",
+      "poirée",
+      "warmoes"
+    ]
+  },
+  "betterave": {
+    "fr": "Betterave",
+    "nl": "Biet",
+    "family": "chenopodiaceae",
+    "syn": [
+      "betterave rouge",
+      "rode biet"
+    ]
+  },
+  "laitue": {
+    "fr": "Laitue",
+    "nl": "Sla",
+    "family": "asteraceae",
+    "syn": [
+      "salade",
+      "kropsla",
+      "ijsbergsla",
+      "eikenbladsla"
+    ]
+  },
+  "endive": {
+    "fr": "Chicorée (endive)",
+    "nl": "Andijvie",
+    "family": "asteraceae",
+    "syn": [
+      "scarole",
+      "chicorée frisée",
+      "cichorei"
+    ]
+  },
+  "topinambour": {
+    "fr": "Topinambour",
+    "nl": "Aardpeer",
+    "family": "asteraceae",
+    "syn": [
+      "poire de terre",
+      "topinamboer"
+    ]
+  },
+  "souci": {
+    "fr": "Souci (œillet d’Inde)",
+    "nl": "Goudsbloem (afrikaantje)",
+    "family": "asteraceae",
+    "syn": [
+      "tagetes",
+      "oeillet d'Inde",
+      "tagetes",
+      "afrikaantje"
+    ]
+  },
+  "camomille": {
+    "fr": "Camomille",
+    "nl": "Kamille",
+    "family": "asteraceae",
+    "syn": []
+  },
+  "tournesol": {
+    "fr": "Tournesol",
+    "nl": "Zonnebloem",
+    "family": "asteraceae",
+    "syn": []
+  },
+  "mais": {
+    "fr": "Maïs",
+    "nl": "Maïs",
+    "family": "poaceae",
+    "syn": [
+      "maïs doux",
+      "suikermaïs"
+    ]
+  },
+  "seigle": {
+    "fr": "Seigle (engrais vert)",
+    "nl": "Rogge (groenbemester)",
+    "family": "poaceae",
+    "syn": [
+      "seigle fourrager",
+      "rogge groenbemester"
+    ]
+  },
+  "basilic": {
+    "fr": "Basilic",
+    "nl": "Basilicum",
+    "family": "lamiaceae",
+    "syn": [
+      "basilic grand vert",
+      "basilicum"
+    ]
+  },
+  "menthe": {
+    "fr": "Menthe",
+    "nl": "Munt",
+    "family": "lamiaceae",
+    "syn": [
+      "menthe poivrée",
+      "menthe verte",
+      "pepermunt",
+      "groene munt"
+    ]
+  },
+  "romarin": {
+    "fr": "Romarin",
+    "nl": "Rozemarijn",
+    "family": "lamiaceae",
+    "syn": []
+  },
+  "thym": {
+    "fr": "Thym",
+    "nl": "Tijm",
+    "family": "lamiaceae",
+    "syn": []
+  },
+  "sauge": {
+    "fr": "Sauge",
+    "nl": "Salie",
+    "family": "lamiaceae",
+    "syn": []
+  },
+  "origan": {
+    "fr": "Origan",
+    "nl": "Oregano",
+    "family": "lamiaceae",
+    "syn": [
+      "marjolaine",
+      "oregano",
+      "marjolein"
+    ]
+  },
+  "sarriette": {
+    "fr": "Sarriette",
+    "nl": "Bonenkruid",
+    "family": "lamiaceae",
+    "syn": [
+      "sarriette des jardins",
+      "bonenkruid"
+    ]
+  },
+  "bourrache": {
+    "fr": "Bourrache",
+    "nl": "Bernagie",
+    "family": "boraginaceae",
+    "syn": [
+      "bourrache officinale",
+      "komkommerkruid"
+    ]
+  },
+  "phacelie": {
+    "fr": "Phacélie (engrais vert)",
+    "nl": "Phacelia (groenbemester)",
+    "family": "boraginaceae",
+    "syn": [
+      "phacélie à feuilles de tanaisie",
+      "bijenplant"
+    ]
+  },
+  "oseille": {
+    "fr": "Oseille",
+    "nl": "Zuring",
+    "family": "polygonaceae",
+    "syn": [
+      "oseille commune",
+      "veldzuring",
+      "zuring"
+    ]
+  },
+  "sarrasin": {
+    "fr": "Sarrasin (engrais vert)",
+    "nl": "Boekweit (groenbemester)",
+    "family": "polygonaceae",
+    "syn": [
+      "blé noir",
+      "boekweit"
+    ]
+  },
+  "mauve": {
+    "fr": "Mauve",
+    "nl": "Kaasjeskruid",
+    "family": "malvaceae",
+    "syn": [
+      "mauve sylvestre",
+      "kaasjeskruid"
+    ]
+  },
+  "fraise": {
+    "fr": "Fraise",
+    "nl": "Aardbei",
+    "family": "rosaceae",
+    "syn": [
+      "fraisiers",
+      "aardbeien"
+    ]
+  },
+  "framboise": {
+    "fr": "Framboise",
+    "nl": "Framboos",
+    "family": "rosaceae",
+    "syn": []
+  },
+  "groseille": {
+    "fr": "Groseille",
+    "nl": "Aalbes",
+    "family": "rosaceae",
+    "syn": [
+      "groseille rouge",
+      "rode bes",
+      "aalbessen"
+    ]
+  }
+}

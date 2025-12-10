@@ -1,0 +1,32 @@
+{
+  "name": "Potager Bilingue",
+  "short_name": "Potager",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "theme_color": "#3c8d40",
+  "background_color": "#f2f4e9",
+  "icons": [
+    {
+      "src": "icons/potager-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/potager-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/apple-touch-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

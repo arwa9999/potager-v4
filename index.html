@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plan du potager — FR/NL + rotation + compagnonnage</title>
+  <meta name="theme-color" content="#3c8d40">
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" sizes="192x192" href="icons/potager-v3-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-potager-v3-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    :root{
+      --green:#3c8d40; --pale:#bfe3b4; --ink:#1f3b1f; --bg:#f9fafb; --card:#fff;
+      --muted:#777; --stroke:#d0d0d0; --accent:#1976d2; --accent-dark:#0f4fa3;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);margin:0;padding:1rem;text-align:center}
+    h1{margin:.2rem 0 .8rem}
+    .topbar{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;justify-content:center;margin:.2rem auto .6rem}
+    .pill{border:1px solid #ccc;border-radius:10px;background:#fff;padding:.35rem .6rem;cursor:pointer}
+    .toolbar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;justify-content:center;background:var(--card);padding:.6rem;border:1px solid #e6e6e6;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:1100px;margin:.5rem auto}
+    .toolbar label{font-size:.9rem;color:#333}
+    .toolbar input,.toolbar select{padding:.35rem .5rem;border:1px solid #ccc;border-radius:6px}
+    .toolbar .btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:.4rem .6rem;cursor:pointer}
+    .toolbar .btn:hover{background:var(--accent-dark)}
+
+    #tooltip{position:fixed;background:rgba(255,255,240,.95);border:1px solid var(--green);border-radius:6px;padding:6px 10px;font-size:14px;color:#222;box-shadow:0 2px 6px rgba(0,0,0,.2);pointer-events:none;opacity:0;transition:opacity .2s;z-index:100}
+
+    #info-panel{position:fixed;right:0;top:0;height:100%;width:360px;background:var(--card);box-shadow:-2px 0 5px rgba(0,0,0,.2);padding:1rem;text-align:left;overflow-y:auto}
+    #info-panel.hidden{display:none}
+    #close{border:0;background:transparent;font-size:1.6rem;float:right;cursor:pointer}
+    .entry{padding:6px 0;border-bottom:1px solid #eee}
+    #add-entry{margin-top:1rem;border-top:1px solid #ccc;padding-top:.6rem}
+    #add-entry input,#add-entry select{display:block;width:100%;margin:5px 0;padding:6px;font-size:1rem}
+    #add-entry button{padding:6px 10px;background:var(--green);color:#fff;border:0;border-radius:4px;cursor:pointer}
+    #add-entry button:hover{filter:brightness(.95)}
+    #controls{margin-top:1rem;border-top:1px solid #ddd;padding-top:.6rem}
+    #controls button,#controls input{margin-top:6px;display:block;width:100%;font-size:.95rem}
+    #controls button{background:var(--accent);color:#fff;border:0;border-radius:4px;padding:6px;cursor:pointer}
+    #controls button:hover{background:var(--accent-dark)}
+    .dimmed{opacity:.25;filter:grayscale(.2)}
+    .rot-ok{stroke:#2e7d32;stroke-width:3px}
+    .rot-bad{stroke:#c62828;stroke-width:3px;stroke-dasharray:4 3}
+
+    /* Photos */
+    .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:.6rem}
+    .photos figure{position:relative;margin:0}
+    .photos img{width:100%;height:70px;object-fit:cover;border-radius:6px;border:1px solid #ddd}
+    .photos button.del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:4px;padding:2px 5px;cursor:pointer;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <button id="lang-toggle" class="pill">FR ⇄ NL</button>
+    <span class="pill" style="display:flex;gap:10px;align-items:center">
+      <span><span style="display:inline-block;width:12px;height:12px;background:#a5d6a7;border:1px solid #3c8d40"></span> <span data-i18n="legend_recent">Récent</span></span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#ffecb3;border:1px solid #c9a400"></span> <span data-i18n="legend_mid">Moyen</span></span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#ffcdd2;border:1px solid #b71c1c"></span> <span data-i18n="legend_old">Ancien</span></span>
+    </span>
+  </div>
+
+  <h1 data-i18n="header">Plan du potager</h1>
+
+  <div class="toolbar" id="filters">
+    <label><span data-i18n="f_action">Action</span><select id="f-action"></select></label>
+    <label><span data-i18n="f_culture">Culture</span><input id="f-culture" placeholder="Tomate…"/></label>
+    <label><span data-i18n="f_from">Du</span><input id="f-from" type="date"/></label>
+    <label><span data-i18n="f_to">Au</span><input id="f-to" type="date"/></label>
+    <label><span data-i18n="rot_family">Famille (rotation)</span><select id="rot-family"></select></label>
+    <label><span data-i18n="rot_years">Années d'écart</span><input id="rot-years" type="number" min="1" max="6" value="3" style="width:5rem"/></label>
+    <button class="btn" id="f-clear" data-i18n="f_clear">Réinitialiser</button>
+  </div>
+
+  <!-- ====== SVG ====== -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -200 900 1700"
+       style="width:100%;max-width:1000px;height:auto;margin:auto;display:block;background:#f2f4e9;">
+    <g id="garden" transform="matrix(1,0,0.004946,2.047345,-304.484,162.685)">
+      <rect width="100%" height="100%" fill="#f2f4e9"/>
+      <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#d0d0d0" stroke-width="0.3"/>
+      </pattern>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+      <g transform="translate(440,50)">
+        <polygon points="0,-20 8,0 -8,0" fill="#333"/>
+        <text x="0" y="15" text-anchor="middle" font-size="12" fill="#333">N</text>
+      </g>
+      <!-- Légende simple -->
+      <g font-size="10" fill="#333">
+        <rect x="80" y="950" width="10" height="10" fill="#bfe3b4" stroke="#3c8d40"/>
+        <text x="95" y="959" data-i18n="legend_plot">Parcelle</text>
+        <rect x="180" y="950" width="10" height="10" fill="#c97a35"/>
+        <text x="195" y="959" data-i18n="legend_compost">Compost</text>
+        <rect x="270" y="950" width="10" height="10" fill="#7ec8e3"/>
+        <text x="285" y="959" data-i18n="legend_water">Eau</text>
+        <rect x="340" y="950" width="10" height="10" fill="#dcdcdc"/>
+        <text x="355" y="959" data-i18n="legend_pergola">Pergola</text>
+      </g>
+
+      <!-- Compost + libellé vertical -->
+      <rect class="zone" data-id="compost" x="382" y="-75" width="30" height="105" fill="#c97a35" stroke="#8b4b1f" stroke-width="2"/>
+      <text x="397" y="-75" font-size="12" fill="#fff" text-anchor="right" dominant-baseline="hanging"
+            style="writing-mode: vertical-rl;" data-role="compost-label">Compost</text>
+
+      <!-- Eau & pergola -->
+      <rect x="582.471" y="320.705" width="77.304" height="43.858" fill="#dcdcdc" stroke="#999" stroke-dasharray="4,2" rx="4" ry="4"></rect>
+      <text x="623.521" y="344.638" text-anchor="middle" font-size="12" fill="#555" data-i18n="legend_pergola">Pergola</text>
+      <rect x="744.303" y="-75.043" width="60" height="60" fill="#7ec8e3" stroke="#3a7ea1" stroke-width="2" rx="6" ry="6"></rect>
+      <text x="801.936" y="253.976" text-anchor="middle" font-size="12" fill="#fff"
+            transform="matrix(1.902825,0,0,2.86815,-754.300781,-762.961975)" data-i18n="legend_water">Eau</text>
+
+      <!-- === Parcelles (extrait) === -->
+      <rect class="plot" data-id="1"  x="420" y="-75.043" width="199.463" height="25"  fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="2"  x="420" y="-45.504" width="199.052" height="25"  fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="3"  x="420" y="-15.613" width="200.841" height="25"  fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="4"  x="382.889" y="13.957" width="201.526" height="25"  fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="5"  x="382.062" y="44.222" width="202.203" height="25"  fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="6"  x="382.615" y="74.486" width="176.034" height="25"  fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+
+      <rect class="plot" data-id="7" x="588.204" y="18.157" width="30" height="55.916" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4" style="stroke-width: 2px; transform-origin: 614.051px 46.115px 0px;" transform="matrix(0.991533, 0.129852, -0.515876, 0.940979, 52.904176, 13.623463)">
+      </rect>
+      <rect class="plot" data-id="8" x="588.204" y="19.24" width="30" height="59.253" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4" style="stroke-width: 2px; transform-origin: 614.051px 48.866px 0px;" transform="matrix(0.991533, 0.129852, -0.515876, 0.940979, 93.336717, 15.46809)">
+      </rect>
+      <rect class="plot" data-id="9"  x="604.189" y="19.606" width="30.815" height="60.378" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"
+            transform="matrix(1,0,-0.000001,1,127.513195,15.9138)"></rect>
+      <rect class="plot" data-id="10" x="604.189" y="36.885" width="30.815" height="113.594" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"
+            transform="matrix(1,0,-0.000001,1,169.148435,-45.999039)"></rect>
+      <rect class="plot" data-id="11" x="540.407" y="115.914" width="210.464" height="25" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="12" x="604.189" y="14.228" width="30.815" height="43.818" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"
+            transform="matrix(1,0,-0.000001,1,168.386332,93.344963)"></rect>
+      <rect class="plot" data-id="13" x="604.189" y="16.958" width="30.815" height="52.225" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"
+            transform="matrix(1,0,-0.000001,1,168.498523,137.693512)"></rect>
+      <rect class="plot" data-id="14" x="604.189" y="18.705" width="30.815" height="57.605" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"
+            transform="matrix(1,0,-0.000001,1,168.154265,191.767899)"></rect>
+      <rect class="plot" data-id="15" x="604.189" y="17.722" width="30.815" height="54.579" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"
+            transform="matrix(1,0,-0.000001,1,167.868195,253.616165)"></rect>
+      <rect class="plot" data-id="16" x="604.189" y="23.509" width="30.815" height="72.401" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"
+            transform="matrix(1,0,-0.000001,1,167.482225,308.039917)"></rect>
+
+      <rect class="plot" data-id="17" x="729.617" y="347.163" width="24.447" height="55.592" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="18" x="727.624" y="317.841" width="43.434" height="25.058" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="19" x="724.287" y="157.774" width="27.649" height="153.515" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="20" x="671.168" y="318.177" width="43.434" height="21.359" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="21" x="671.707" y="344.327" width="43.434" height="20.849" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="22" x="447.112" y="390.691" width="269.256" height="13.506" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="23" x="446.513" y="372.532" width="269.256" height="13.506" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="24" x="483.096" y="346.424" width="95.607" height="18.55" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="25" x="483.219" y="321.539" width="95.607" height="18.55" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+      <rect class="plot" data-id="26" x="624.195" y="286.626" width="92.779" height="24.664" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="27" x="623.711" y="253.922" width="92.779" height="28.699" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="28" x="624.534" y="226.433" width="92.779" height="23.991" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="29" x="623.985" y="198.186" width="92.779" height="24.831" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+
+      <rect class="plot" data-id="30" x="625.293" y="159.514" width="92.779" height="34.415" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="31" x="491.467" y="159.85" width="112.056" height="34.415" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="32" x="491.109" y="198.522" width="110.892" height="24.831" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="33" x="490.283" y="226.433" width="111.466" height="23.991" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="34" x="492.207" y="255.267" width="109.23" height="28.699" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+      <rect class="plot" data-id="35" x="492.009" y="286.625" width="109.137" height="24.664" fill="#bfe3b4" stroke="#3c8d40" stroke-width="2"></rect>
+
+     <!-- Colonne Fruitiers -->
+      <rect class="plot" data-id="36" data-name="fruit_trees" x="445.181" y="156.351" width="27.649" height="210.76"
+            fill="#bfe3b4" stroke="#3c8d40" stroke-width="2" rx="4" ry="4"></rect>
+
+      <!-- Cadre -->
+      <rect x="382.1" y="209.999" width="423.58" height="488.438" style="fill:none;stroke:#0f0e0e;stroke-width:4.6;stroke-dasharray:2px"
+            transform="matrix(1,0,-0.004946,1,0.236003,-289.460999)"></rect>
+      <rect x="381.411" y="81.378" width="7.573" height="24.548" style="stroke:#b85900;fill:#c25907"
+            transform="matrix(1,0,-0.004946,1,-1.44008,49.415485)"></rect>
+    </g>
+  </svg>
+
+  <!-- Panneau latéral -->
+  <div id="info-panel" class="hidden">
+    <button id="close">×</button>
+    <h2 id="plot-title"></h2>
+    <div id="history"></div>
+
+    <div id="add-entry">
+      <h3 data-i18n="panel_add">+ Ajouter une action</h3>
+      <input type="date" id="date" />
+      <select id="action"></select>
+      <input type="text" id="culture" data-i18n-ph="culture_ph" placeholder="Nom de la culture" />
+      <label style="display:block;margin:.4rem 0" data-i18n="family_label">Famille botanique (optionnel)</label>
+      <select id="family"></select>
+      <button id="save" data-i18n="save">Enregistrer</button>
+
+      <div style="margin-top:.6rem">
+        <label style="display:block;margin:.4rem 0" data-i18n="photos_add">Ajouter des photos (jpg/png)</label>
+        <input type="file" id="add-photo" accept="image/*" multiple style="width:100%">
+        <div class="photos" id="photos"></div>
+      </div>
+    </div>
+
+    <div id="controls">
+      <h3 data-i18n="storage">📦 Sauvegarde</h3>
+      <button id="export" data-i18n="export">Exporter l’historique (.json)</button>
+      <input type="file" id="import" accept=".json" />
+    </div>
+  </div>
+
+  <!-- Données inline minimales (compat v1) -->
+  <script id="data-inline" type="application/json">
+  {"plots":[
+    {"id":1,"history":[{"date":"2025-06-01","action":"Plantation","culture":"Patates douces"}]},
+    {"id":2,"history":[
+      {"date":"2025-06-01","action":"Plantation","culture":"Patates douces"},
+      {"date":"2025-07-15","action":"Plantation","culture":"Poireaux"},
+      {"date":"2025-08-25","action":"Plantation","culture":"Pakchoi"}]},
+    {"id":3,"history":[{"date":"2025-05-30","action":"Plantation","culture":"Fenouil"},{"date":"2025-05-30","action":"Plantation","culture":"Céleri"}]},
+    {"id":4,"history":[{"date":"2025-01-01","action":"Plantation","culture":"Poireaux"},{"date":"2022-05-01","action":"Plantation","culture":"Asperges"}]},
+    {"id":5,"history":[{"date":"2025-05-01","action":"Plantation","culture":"Poireaux"},{"date":"2025-08-01","action":"Plantation","culture":"Potiron"},{"date":"2022-05-01","action":"Plantation","culture":"Asperges"}]},
+    {"id":6,"history":[{"date":"2025-03-30","action":"Plantation","culture":"Poireaux"},{"date":"2025-03-30","action":"Plantation","culture":"Potiron"}]},
+    {"id":7,"history":[]},{"id":8,"history":[]},{"id":9,"history":[]},{"id":10,"history":[]},
+    {"id":11,"history":[]},{"id":12,"history":[]},{"id":13,"history":[]},{"id":14,"history":[]},
+    {"id":15,"history":[]},{"id":16,"history":[]},{"id":17,"history":[]},{"id":18,"history":[]},
+    {"id":19,"history":[]},{"id":20,"history":[]},{"id":21,"history":[]},{"id":22,"history":[]},
+    {"id":23,"history":[]},{"id":24,"history":[]},{"id":25,"history":[]},{"id":26,"history":[]},
+    {"id":27,"history":[]},{"id":28,"history":[]},{"id":29,"history":[]},{"id":30,"history":[]},
+    {"id":31,"history":[]},{"id":32,"history":[]},{"id":33,"history":[]},{"id":34,"history":[]},
+    {"id":35,"history":[]},{"id":36,"history":[]}
+  ]}
+  </script>
+
+  <script src="./app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(console.error);
+      });
+    }
+  </script>
+
+  <div id="tooltip"></div>
+</body>
+</html>

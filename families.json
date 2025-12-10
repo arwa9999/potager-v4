@@ -1,0 +1,50 @@
+{
+  "solanaceae": {
+    "fr": "Solanacées",
+    "nl": "Nachtschade"
+  },
+  "cucurbitaceae": {
+    "fr": "Cucurbitacées",
+    "nl": "Komkommerachtigen"
+  },
+  "brassicaceae": {
+    "fr": "Brassicacées",
+    "nl": "Kruisbloemigen"
+  },
+  "fabaceae": {
+    "fr": "Légumineuses",
+    "nl": "Vlinderbloemigen"
+  },
+  "alliaceae": {
+    "fr": "Alliacées",
+    "nl": "Lookachtigen"
+  },
+  "apiaceae": {
+    "fr": "Apiacées",
+    "nl": "Schermbloemigen"
+  },
+  "chenopodiaceae": {
+    "fr": "Chénopodiacées/Amarantacées",
+    "nl": "Amarantachtigen"
+  },
+  "asteraceae": {
+    "fr": "Astéracées",
+    "nl": "Composieten"
+  },
+  "lamiaceae": {
+    "fr": "Lamiacées",
+    "nl": "Lipbloemenfamilie"
+  },
+  "boraginaceae": {
+    "fr": "Borraginacées",
+    "nl": "Ruwbladigen"
+  },
+  "poaceae": {
+    "fr": "Graminées",
+    "nl": "Grassen"
+  },
+  "rosaceae": {
+    "fr": "Rosacées",
+    "nl": "Rozenfamilie"
+  }
+}
