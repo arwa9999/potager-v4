@@ -1,7 +1,7 @@
 /* stock.js — Gestion du stock + synchronisation Firebase (v11.0.1)
    Compatible avec ton firebase.js modulaire */
+import { syncSection, loadSection } from "./firebase.js";
 
-import { syncToCloud, loadFromCloud } from "./firebase.js";
 
 (function(){
   document.addEventListener("DOMContentLoaded", () => {
@@ -42,7 +42,9 @@ import { syncToCloud, loadFromCloud } from "./firebase.js";
   /* === Firebase sync === */
   async function syncFromCloud(){
     try {
-      const remote = await loadFromCloud();
+      const remote = await loadSection("stock");
+      await syncSection("stock", stock);
+
       if (Array.isArray(remote) && remote.length) {
         console.log("☁️ Import Firebase → local stock");
         stock = remote;
@@ -221,6 +223,7 @@ setSyncState(navigator.onLine ? 'ok' : 'offline');
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
      });
 })();
+
 
 
 
