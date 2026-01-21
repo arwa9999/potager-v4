@@ -1,6 +1,18 @@
 /* === STOCK PANEL + ANIMATION === */
 
 #stock-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 360px;
+  height: 80vh; /* ← 80% de la hauteur visible */
+  top: auto;
+  background: #fff;
+  border-radius: 10px 0 0 10px;
+  box-shadow: -3px 3px 10px rgba(0,0,0,0.25);
+  padding: 1rem;
+  overflow-y: auto;
+  z-index: 999;
   transform: translateX(100%);
   opacity: 0;
   transition: transform 0.35s ease, opacity 0.35s ease;
@@ -33,6 +45,8 @@
 }
 
 /* Style unifié du panneau */
+
+
 #stock-panel h2 {
   margin-top: 0;
   font-size: 1.3rem;
@@ -57,6 +71,7 @@
   background: rgba(0,0,0,0.15);
   backdrop-filter: none;
 }
+
 
 
 
