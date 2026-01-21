@@ -2,7 +2,7 @@
    Compatible avec ton firebase.js modulaire */
 
 import { syncToCloud, loadFromCloud } from "./firebase.js";
-setSyncState(navigator.onLine ? 'ok' : 'offline');
+
 (function(){
   const STORAGE_KEY = "stock_potager_v1";
 
@@ -35,7 +35,7 @@ setSyncState(navigator.onLine ? 'ok' : 'offline');
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(stock)); } catch {}
   }
 if (!Array.isArray(stock)) stock = [];
-
+setSyncState(navigator.onLine ? 'ok' : 'offline');
   /* === Firebase sync === */
   async function syncFromCloud(){
     try {
@@ -206,5 +206,6 @@ syncToCloudDebounced = async function(){
 
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
 })();
+
 
 
