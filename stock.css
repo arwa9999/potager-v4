@@ -1,0 +1,58 @@
+/* === STOCK PANEL + ANIMATION === */
+
+#stock-panel {
+  transform: translateX(100%);
+  opacity: 0;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+#stock-panel.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+#stock-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 998;
+}
+
+#stock-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Bouton d'ouverture flottant */
+#open-stock {
+  transition: transform 0.25s ease, background 0.3s;
+}
+#open-stock:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
+
+/* Style unifié du panneau */
+#stock-panel h2 {
+  margin-top: 0;
+  font-size: 1.3rem;
+  color: #2e7d32;
+}
+#stock-panel label {
+  font-weight: 500;
+  color: #333;
+}
+#stock-panel input, #stock-panel select {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.95rem;
+}
+#stock-panel button#stock-add {
+  font-weight: 600;
+  letter-spacing: .5px;
+}
