@@ -212,7 +212,9 @@ syncToCloudDebounced = async function(){
 if (!Array.isArray(stock)) stock = [];
 setSyncState(navigator.onLine ? 'ok' : 'offline');
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
+     });
 })();
+
 
 
 
