@@ -1,25 +1,35 @@
-/* === Bouton flottant === */
 #open-stock {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #3c8d40;
+  top: 50%;               /* milieu vertical */
+  right: 0;               /* collé au bord droit */
+  transform: translateY(-50%);
+  background: #3c8d40;    /* vert potager */
   color: #fff;
   border: none;
-  border-radius: 50%;
+  border-radius: 50% 0 0 50%; /* arrondi côté gauche seulement */
   width: 56px;
   height: 56px;
-  font-size: 22px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  font-size: 24px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
   cursor: pointer;
-  z-index: 1000;
-  transition: transform 0.25s ease, background 0.3s;
-}
-#open-stock:hover {
-  background: #45a049;
-  transform: scale(1.05);
+  z-index: 1200;          /* au-dessus de tout */
+  transition: all 0.3s ease;
 }
 
+#open-stock:hover {
+  background: #45a049;    /* vert plus clair au survol */
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Effet de “bulle” verte qui pulse doucement */
+@keyframes pulseGreen {
+  0% { box-shadow: 0 0 0 0 rgba(60,141,64,0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(60,141,64,0); }
+  100% { box-shadow: 0 0 0 0 rgba(60,141,64,0); }
+}
+#open-stock {
+  animation: pulseGreen 2s infinite;
+}
 /* === Panneau principal === */
 #stock-panel {
   position: fixed;
@@ -104,6 +114,7 @@
   opacity: 1;
   pointer-events: all;
 }
+
 
 
 
