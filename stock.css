@@ -57,11 +57,28 @@
   font-weight: 600;
   letter-spacing: .5px;
 }
-#stock-panel.hidden { display: none; }
-#stock-panel.visible { display: block; }
-#stock-overlay.active { 
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  z-index: 998; 
+#stock-panel.visible {
+  transform: translateX(0);
+  opacity: 1;
 }
+
+#stock-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 998;
+}
+
+#stock-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+
 
 
