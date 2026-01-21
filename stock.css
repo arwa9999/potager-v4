@@ -21,7 +21,10 @@
 
 /* Bouton d'ouverture flottant */
 #open-stock {
-  transition: transform 0.25s ease, background 0.3s;
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
 }
 #open-stock:hover {
   background: #45a049;
@@ -53,6 +56,7 @@
   background: rgba(0,0,0,0.15);
   backdrop-filter: none;
 }
+
 
 
 
