@@ -12,7 +12,7 @@ import { syncToCloud, loadFromCloud } from "./firebase.js";
     const panel = $('#stock-panel');
     const openBtn = $('#open-stock');
     const closeBtn = $('#close-stock');
-    const overlay = $('#stock-overlay');
+
   /*const panel = $('#stock-panel');
   const openBtn = $('#open-stock');
   const closeBtn = $('#close-stock');*/
@@ -213,6 +213,7 @@ if (!Array.isArray(stock)) stock = [];
 setSyncState(navigator.onLine ? 'ok' : 'offline');
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
 })();
+
 
 
 
