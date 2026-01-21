@@ -662,6 +662,36 @@ function renderCompanionAdvice(plotId){
   applyRotationOverlay();
   applyLang(); // finalise labels + placeholders + file labels
 }
+/* ===== LIAISON AVEC STOCKAPI ===== */
+function updateStockFromAction(actionKey, cultureName){
+  if(!window.StockAPI || !cultureName) return;
+  const normalized = cultureName.trim().toLowerCase();
+
+  // si semis ou plantation → décrémente 1 unité de semence
+  if(['semis','plantation'].includes(actionKey)){
+    StockAPI.remove(normalized, 1);
+    console.log(`[Stock] -1 semence de ${normalized}`);
+  }
+
+  // si récolte → propose d'ajouter au stock
+  if(actionKey==='recolte'){
+    const add = confirm(`Souhaitez-vous ajouter des graines récoltées de "${cultureName}" au stock ?`);
+    if(add){
+      StockAPI.add(normalized, 1, 'semence');
+      console.log(`[Stock] +1 semence de ${normalized}`);
+    }
+  }
+}
+
+// interception douce de l’enregistrement
+const oldSaveHandler = document.getElementById('save').onclick;
+document.getElementById('save').addEventListener('click', ()=>{
+  try{
+    const aKey = document.getElementById('action').value || '';
+    const cTxt = document.getElementById('culture').value.trim();
+    if(aKey && cTxt) updateStockFromAction(aKey, cTxt);
+  }catch(e){ console.warn('Stock sync error:', e); }
+});
 
   boot();
 })();
