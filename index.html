@@ -221,5 +221,41 @@
   </script>
 
   <div id="tooltip"></div>
+<!-- === Panneau de gestion du stock === -->
+<button id="open-stock" style="
+  position:fixed; bottom:20px; right:20px;
+  background:#3c8d40; color:#fff; border:none; border-radius:50%;
+  width:56px; height:56px; font-size:22px; box-shadow:0 2px 6px rgba(0,0,0,.25);
+  cursor:pointer; z-index:1000" title="Ouvrir le stock">📦</button>
+
+<div id="stock-panel" class="hidden" style="
+  position:fixed; top:0; right:0; width:360px; height:100%;
+  background:#fff; box-shadow:-2px 0 8px rgba(0,0,0,.2);
+  padding:1rem; overflow-y:auto; z-index:999;
+  transition:transform .3s ease; text-align:left;">
+  <button id="close-stock" style="
+    float:right; background:transparent; border:0; font-size:1.6rem; cursor:pointer;">×</button>
+  <h2>📦 Stock de semences</h2>
+
+  <div style="margin:1rem 0;">
+    <label>Nom</label>
+    <input id="stock-name" type="text" style="width:100%;padding:6px;margin-bottom:.5rem;">
+    <label>Quantité</label>
+    <input id="stock-qty" type="number" value="1" min="0" style="width:100%;padding:6px;margin-bottom:.5rem;">
+    <label>Type</label>
+    <select id="stock-type" style="width:100%;padding:6px;margin-bottom:.5rem;">
+      <option value="semence">Semence</option>
+      <option value="plant">Plant</option>
+      <option value="bulbe">Bulbe</option>
+    </select>
+    <button id="stock-add" style="
+      width:100%;padding:8px;border:0;border-radius:6px;
+      background:#3c8d40;color:#fff;cursor:pointer;">Ajouter</button>
+  </div>
+
+  <h3>Inventaire</h3>
+  <div id="stock-list" style="margin-top:.5rem"></div>
+</div>
+
 </body>
 </html>
