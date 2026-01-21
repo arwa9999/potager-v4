@@ -4,14 +4,18 @@
 import { syncToCloud, loadFromCloud } from "./firebase.js";
 
 (function(){
-  const STORAGE_KEY = "stock_potager_v1";
+  document.addEventListener("DOMContentLoaded", () => {
 
-  const $  = s => document.querySelector(s);
-  const $$ = s => Array.from(document.querySelectorAll(s));
+    const $  = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
 
-  const panel = $('#stock-panel');
+    const panel = $('#stock-panel');
+    const openBtn = $('#open-stock');
+    const closeBtn = $('#close-stock');
+    const overlay = $('#stock-overlay');
+  /*const panel = $('#stock-panel');
   const openBtn = $('#open-stock');
-  const closeBtn = $('#close-stock');
+  const closeBtn = $('#close-stock');*/
   const listEl = $('#stock-list');
   const nameEl = $('#stock-name');
   const qtyEl  = $('#stock-qty');
@@ -209,6 +213,7 @@ if (!Array.isArray(stock)) stock = [];
 setSyncState(navigator.onLine ? 'ok' : 'offline');
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
 })();
+
 
 
 
