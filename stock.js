@@ -176,15 +176,28 @@ function setSyncState(state){
       dot.style.background = '#2e7d32';
       label.textContent = 'Sync : à jour';
       break;
+      setMiniDot(state);
+
     case 'syncing':
       dot.style.background = '#f9a825';
       label.textContent = 'Sync : en cours…';
       break;
+      setMiniDot(state);
+
     case 'offline':
       dot.style.background = '#d32f2f';
       label.textContent = 'Sync : hors ligne';
       break;
+      setMiniDot(state);
+
   }
+}
+const miniDot = document.getElementById('sync-dot-mini');
+
+function setMiniDot(state) {
+  if (!miniDot) return;
+  miniDot.className = ''; // reset
+  miniDot.classList.add(state);
 }
 
 // détection connexion internet
@@ -214,6 +227,7 @@ setSyncState(navigator.onLine ? 'ok' : 'offline');
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
      });
 })();
+
 
 
 
