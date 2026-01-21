@@ -120,24 +120,27 @@ import { syncToCloud, loadFromCloud } from "./firebase.js";
     }
   });
 
-  /* === Panneau === */
-  const overlay = document.getElementById('stock-overlay');
+/* === Panneau === */
+const overlay = document.getElementById('stock-overlay');
 
-openBtn?.addEventListener('click', ()=>{
+openBtn?.addEventListener('click', () => {
   panel.classList.add('visible');
   overlay.classList.add('active');
   loadLocal();
   render();
   syncFromCloud();
 });
-closeBtn?.addEventListener('click', ()=>{
+
+closeBtn?.addEventListener('click', () => {
   panel.classList.remove('visible');
   overlay.classList.remove('active');
 });
-overlay?.addEventListener('click', ()=>{
+
+overlay?.addEventListener('click', () => {
   panel.classList.remove('visible');
   overlay.classList.remove('active');
 });
+
 
 
   /* === API publique === */
@@ -206,6 +209,7 @@ if (!Array.isArray(stock)) stock = [];
 setSyncState(navigator.onLine ? 'ok' : 'offline');
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
 })();
+
 
 
 
