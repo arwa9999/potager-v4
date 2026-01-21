@@ -1,34 +1,58 @@
+/* === Bouton flottant central, style "stock" === */
 #open-stock {
   position: fixed;
-  top: 50%;               /* milieu vertical */
-  right: 0;               /* collé au bord droit */
+  top: 50%; /* milieu vertical exact */
+  right: 0;
   transform: translateY(-50%);
-  background: #3c8d40;    /* vert potager */
+  background: #3c8d40;
   color: #fff;
   border: none;
-  border-radius: 50% 0 0 50%; /* arrondi côté gauche seulement */
+  border-radius: 50% 0 0 50%;
   width: 56px;
   height: 56px;
   font-size: 24px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.25);
   cursor: pointer;
-  z-index: 1200;          /* au-dessus de tout */
+  z-index: 1200;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Effet visuel : léger zoom + halo */
 #open-stock:hover {
-  background: #45a049;    /* vert plus clair au survol */
+  background: #45a049;
   transform: translateY(-50%) scale(1.1);
 }
 
-/* Effet de “bulle” verte qui pulse doucement */
+/* Animation de halo vert */
 @keyframes pulseGreen {
-  0% { box-shadow: 0 0 0 0 rgba(60,141,64,0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(60,141,64,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(60,141,64,0.4); }
+  70%  { box-shadow: 0 0 0 10px rgba(60,141,64,0); }
   100% { box-shadow: 0 0 0 0 rgba(60,141,64,0); }
 }
 #open-stock {
-  animation: pulseGreen 2s infinite;
+  animation: pulseGreen 2.5s infinite;
+}
+
+/* Mini pastille d’état sync */
+#sync-dot-mini {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 10px;
+  height: 10px;
+  background: #999;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  box-shadow: 0 0 3px rgba(0,0,0,0.2);
+}
+
+/* Couleurs selon état */
+#sync-dot-mini.ok       { background: #2e7d32; }   /* vert */
+#sync-dot-mini.syncing  { background: #f9a825; }   /* jaune */
+#sync-dot-mini.offline  { background: #d32f2f; }   /* rouge */
 }
 /* === Panneau principal === */
 #stock-panel {
@@ -114,6 +138,7 @@
   opacity: 1;
   pointer-events: all;
 }
+
 
 
 
