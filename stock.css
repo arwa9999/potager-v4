@@ -1,19 +1,39 @@
-/* === STOCK PANEL + ANIMATION === */
+/* === Bouton flottant === */
+#open-stock {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #3c8d40;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.25s ease, background 0.3s;
+}
+#open-stock:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
 
+/* === Panneau principal === */
 #stock-panel {
   position: fixed;
   right: 20px;
   bottom: 20px;
   width: 360px;
-  height: 80vh; /* ← 80% de la hauteur visible */
-  top: auto;
+  height: 80vh;
   background: #fff;
   border-radius: 10px 0 0 10px;
   box-shadow: -3px 3px 10px rgba(0,0,0,0.25);
   padding: 1rem;
   overflow-y: auto;
   z-index: 999;
-  transform: translateX(100%);
+  transform: translateX(110%);
   opacity: 0;
   transition: transform 0.35s ease, opacity 0.35s ease;
 }
@@ -23,54 +43,68 @@
   display: block;
 }
 
-
-#stock-overlay {
-  background: rgba(0,0,0,0.15);
-  backdrop-filter: none;
+/* === Header du panneau === */
+#stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: .8rem;
 }
-
-
-
-/* Bouton d'ouverture flottant */
-#open-stock {
-  top: 50% ;
-  bottom: auto ;
-  right: 20px ;
-  transform: translateY(-50%) ;
-}
-
-#open-stock:hover {
-  background: #45a049;
-  transform: scale(1.05);
-}
-
-/* Style unifié du panneau */
-
-
-#stock-panel h2 {
-  margin-top: 0;
-  font-size: 1.3rem;
+#stock-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
   color: #2e7d32;
 }
-#stock-panel label {
+#close-stock {
+  background: transparent;
+  border: 0;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #555;
+}
+
+/* === Champs === */
+.stock-fields label {
+  display: block;
+  margin-top: .5rem;
   font-weight: 500;
   color: #333;
 }
-#stock-panel input, #stock-panel select {
+.stock-fields input,
+.stock-fields select {
+  width: 100%;
+  padding: 6px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 0.95rem;
+  margin-bottom: .4rem;
 }
-#stock-panel button#stock-add {
+#stock-add {
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: #3c8d40;
+  color: #fff;
+  cursor: pointer;
   font-weight: 600;
-  letter-spacing: .5px;
 }
 
-
-#stock-overlay.active {
+/* === Overlay === */
+#stock-overlay {
+  position: fixed;
+  inset: 0;
   background: rgba(0,0,0,0.15);
-  backdrop-filter: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 998;
 }
+#stock-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
 
 
 
