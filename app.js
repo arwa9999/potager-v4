@@ -693,5 +693,6 @@ document.getElementById('save').addEventListener('click', ()=>{
   }catch(e){ console.warn('Stock sync error:', e); }
 });
 
+
   boot();
 })();
