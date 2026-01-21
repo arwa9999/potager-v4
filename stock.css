@@ -36,24 +36,6 @@
   animation: pulseGreen 2.5s infinite;
 }
 
-/* Mini pastille d’état sync */
-#sync-dot-mini {
-  position: absolute;
-  top: 6px;
-  left: 8px;
-  width: 10px;
-  height: 10px;
-  background: #999;
-  border-radius: 50%;
-  border: 1px solid #fff;
-  box-shadow: 0 0 3px rgba(0,0,0,0.2);
-}
-
-/* Couleurs selon état */
-#sync-dot-mini.ok       { background: #2e7d32; }   /* vert */
-#sync-dot-mini.syncing  { background: #f9a825; }   /* jaune */
-#sync-dot-mini.offline  { background: #d32f2f; }   /* rouge */
-}
 /* === Panneau principal === */
 #stock-panel {
   position: fixed;
@@ -138,6 +120,7 @@
   opacity: 1;
   pointer-events: all;
 }
+
 
 
 
