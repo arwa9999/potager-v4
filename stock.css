@@ -8,7 +8,7 @@
 #stock-panel.visible {
   transform: translateX(0);
   opacity: 1;
-  display: block;
+  
 }
 
 #stock-overlay {
@@ -53,10 +53,7 @@
   font-weight: 600;
   letter-spacing: .5px;
 }
-#stock-panel.visible {
-  transform: translateX(0);
-  opacity: 1;
-}
+
 
 #stock-overlay.active {
   position: fixed;
@@ -68,6 +65,7 @@
   opacity: 1;
   pointer-events: all;
 }
+
 
 
 
