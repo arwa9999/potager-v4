@@ -3,12 +3,13 @@
 #stock-panel {
   transform: translateX(100%);
   opacity: 0;
+  display: none;
   transition: transform 0.35s ease, opacity 0.35s ease;
 }
-
 #stock-panel.visible {
   transform: translateX(0);
   opacity: 1;
+  display: block;
 }
 
 #stock-overlay {
@@ -62,4 +63,5 @@
   position: fixed; inset: 0; background: rgba(0,0,0,0.4);
   z-index: 998; 
 }
+
 
