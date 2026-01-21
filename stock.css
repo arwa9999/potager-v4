@@ -3,7 +3,6 @@
 #stock-panel {
   transform: translateX(100%);
   opacity: 0;
-  display: none;
   transition: transform 0.35s ease, opacity 0.35s ease;
 }
 #stock-panel.visible {
@@ -24,10 +23,7 @@
   z-index: 998;
 }
 
-#stock-overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
+
 
 /* Bouton d'ouverture flottant */
 #open-stock {
@@ -62,22 +58,19 @@
   opacity: 1;
 }
 
-#stock-overlay {
+#stock-overlay.active {
   position: fixed;
   top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.35);
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3);
   backdrop-filter: blur(2px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 998;
-}
-
-#stock-overlay.active {
+  z-index: 998;  
   opacity: 1;
   pointer-events: all;
 }
+
+
+
 
 
 
