@@ -56,3 +56,10 @@
   font-weight: 600;
   letter-spacing: .5px;
 }
+#stock-panel.hidden { display: none; }
+#stock-panel.visible { display: block; }
+#stock-overlay.active { 
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 998; 
+}
+
