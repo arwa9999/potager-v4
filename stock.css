@@ -1,6 +1,6 @@
 #open-stock {
   position: fixed;
-  top: 50%;               /* milieu vertical */
+  top: 80%;               /* milieu vertical */
   right: 0;               /* collé au bord droit */
   transform: translateY(-50%);
   background: #3c8d40;    /* vert potager */
@@ -114,6 +114,7 @@
   opacity: 1;
   pointer-events: all;
 }
+
 
 
 
