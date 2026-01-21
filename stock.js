@@ -34,8 +34,7 @@ import { syncToCloud, loadFromCloud } from "./firebase.js";
   function saveLocal(){
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(stock)); } catch {}
   }
-if (!Array.isArray(stock)) stock = [];
-setSyncState(navigator.onLine ? 'ok' : 'offline');
+
   /* === Firebase sync === */
   async function syncFromCloud(){
     try {
@@ -203,9 +202,11 @@ syncToCloudDebounced = async function(){
   await oldSyncToCloudDebounced();
   setSyncState(navigator.onLine ? 'ok' : 'offline');
 };
-
+if (!Array.isArray(stock)) stock = [];
+setSyncState(navigator.onLine ? 'ok' : 'offline');
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
 })();
+
 
 
 
