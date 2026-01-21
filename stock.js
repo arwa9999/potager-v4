@@ -34,6 +34,7 @@ setSyncState(navigator.onLine ? 'ok' : 'offline');
   function saveLocal(){
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(stock)); } catch {}
   }
+if (!Array.isArray(stock)) stock = [];
 
   /* === Firebase sync === */
   async function syncFromCloud(){
@@ -205,4 +206,5 @@ syncToCloudDebounced = async function(){
 
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
 })();
+
 
