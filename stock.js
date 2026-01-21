@@ -2,7 +2,7 @@
    Compatible avec ton firebase.js modulaire */
 
 import { syncToCloud, loadFromCloud } from "./firebase.js";
-
+setSyncState(navigator.onLine ? 'ok' : 'offline');
 (function(){
   const STORAGE_KEY = "stock_potager_v1";
 
@@ -205,3 +205,4 @@ syncToCloudDebounced = async function(){
 
   console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
 })();
+
