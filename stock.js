@@ -1,21 +1,18 @@
 /* stock.js — Gestion du stock + synchronisation Firebase (v11.0.1)
-   Compatible avec ton firebase.js modulaire */
+   Adapté au nouveau firebase.js (sections séparées) */
+
 import { syncSection, loadSection } from "./firebase.js";
 
-
 (function(){
-  document.addEventListener("DOMContentLoaded", () => {
+  const STORAGE_KEY = "stock_potager_v1";
 
-    const $  = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
+  const $  = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
 
-    const panel = $('#stock-panel');
-    const openBtn = $('#open-stock');
-    const closeBtn = $('#close-stock');
-
-  /*const panel = $('#stock-panel');
+  const panel = $('#stock-panel');
   const openBtn = $('#open-stock');
-  const closeBtn = $('#close-stock');*/
+  const closeBtn = $('#close-stock');
+  const overlay = $('#stock-overlay');
   const listEl = $('#stock-list');
   const nameEl = $('#stock-name');
   const qtyEl  = $('#stock-qty');
@@ -43,8 +40,6 @@ import { syncSection, loadSection } from "./firebase.js";
   async function syncFromCloud(){
     try {
       const remote = await loadSection("stock");
-      await syncSection("stock", stock);
-
       if (Array.isArray(remote) && remote.length) {
         console.log("☁️ Import Firebase → local stock");
         stock = remote;
@@ -62,14 +57,14 @@ import { syncSection, loadSection } from "./firebase.js";
     syncTimer = setTimeout(async ()=>{
       try {
         isSyncing = true;
-        await syncToCloud(stock);
+        await syncSection("stock", stock);
         console.log("☁️ Stock synchronisé vers Firebase");
       } catch (e) {
         console.warn("⚠️ SyncToCloud échouée:", e);
       } finally {
         isSyncing = false;
       }
-    }, 800); // évite les push multiples si tu modifies plusieurs entrées rapidement
+    }, 800);
   }
 
   /* === Rendu UI === */
@@ -126,28 +121,22 @@ import { syncSection, loadSection } from "./firebase.js";
     }
   });
 
-/* === Panneau === */
-const overlay = document.getElementById('stock-overlay');
-
-openBtn?.addEventListener('click', ()=>{
-  panel.classList.add('visible');
-  overlay.classList.add('active');
-  loadLocal();
-  render();
-  syncFromCloud();
-});
-
-closeBtn?.addEventListener('click', ()=>{
-  panel.classList.remove('visible');
-  overlay.classList.remove('active');
-});
-
-overlay?.addEventListener('click', ()=>{
-  panel.classList.remove('visible');
-  overlay.classList.remove('active');
-});
-
-
+  /* === Panneau === */
+  openBtn?.addEventListener('click', ()=>{
+    panel.classList.add('visible');
+    overlay.classList.add('active');
+    loadLocal();
+    render();
+    syncFromCloud();
+  });
+  closeBtn?.addEventListener('click', ()=>{
+    panel.classList.remove('visible');
+    overlay.classList.remove('active');
+  });
+  overlay?.addEventListener('click', ()=>{
+    panel.classList.remove('visible');
+    overlay.classList.remove('active');
+  });
 
   /* === API publique === */
   window.StockAPI = {
@@ -167,71 +156,6 @@ overlay?.addEventListener('click', ()=>{
       }
     }
   };
-/* === Indicateur Sync Firebase === */
-const dot = document.getElementById('sync-dot');
-const label = document.getElementById('sync-label');
 
-function setSyncState(state){
-  if(!dot || !label) return;
-  switch(state){
-    case 'ok':
-      dot.style.background = '#2e7d32';
-      label.textContent = 'Sync : à jour';
-      break;
-    case 'syncing':
-      dot.style.background = '#f9a825';
-      label.textContent = 'Sync : en cours…';
-      break;
-    case 'offline':
-      dot.style.background = '#d32f2f';
-      label.textContent = 'Sync : hors ligne';
-      break;
-  }
-}
-
-
-function setMiniDot(state) {
-  if (!miniDot) return;
-  miniDot.className = ''; // reset
-  miniDot.classList.add(state);
-}
-
-// détection connexion internet
-window.addEventListener('online', ()=>setSyncState('ok'));
-window.addEventListener('offline', ()=>setSyncState('offline'));
-
-// hook les fonctions de sync existantes
-async function safeSyncCloudWrapper(action){
-  try{
-    setSyncState('syncing');
-    await action();
-    setSyncState('ok');
-  }catch{
-    setSyncState('offline');
-  }
-}
-
-// redéfinir tes fonctions existantes pour inclure la pastille
-const oldSyncToCloudDebounced = syncToCloudDebounced;
-syncToCloudDebounced = async function(){
-  setSyncState('syncing');
-  await oldSyncToCloudDebounced();
-  setSyncState(navigator.onLine ? 'ok' : 'offline');
-};
-if (!Array.isArray(stock)) stock = [];
-setSyncState(navigator.onLine ? 'ok' : 'offline');
-  console.log("[stock.js] Stock connecté à Firebase ☁️ + localStorage 💾");
-     });
+  console.log("[stock.js] ✅ Connecté à Firebase (section stock) + localStorage 💾");
 })();
-
-
-
-
-
-
-
-
-
-
-
-
