@@ -139,23 +139,109 @@ import { syncSection, loadSection } from "./firebase.js";
   });
 
   /* === API publique === */
-  window.StockAPI = {
-    getAll: ()=> structuredClone(stock),
-    add: (name, qty=1, type='semence')=>{
-      const existing = stock.find(i => i.name.toLowerCase() === name.toLowerCase() && i.type === type);
-      if (existing) existing.qty += qty;
-      else stock.push({ name, qty, type });
-      saveLocal(); render(); syncToCloudDebounced();
-    },
-    remove: (name, qty=1)=>{
-      const idx = stock.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
-      if (idx >= 0) {
-        stock[idx].qty = Math.max(0, stock[idx].qty - qty);
-        if (stock[idx].qty === 0) stock.splice(idx, 1);
-        saveLocal(); render(); syncToCloudDebounced();
-      }
-    }
-  };
+ /* === API publique + Initialisation === */
+window.StockAPI = {
+  stock: [],
 
-  console.log("[stock.js] ✅ Connecté à Firebase (section stock) + localStorage 💾");
-})();
+  getAll() {
+    return structuredClone(this.stock);
+  },
+
+  add(name, qty = 1, type = "semence") {
+    const existing = this.stock.find(i => i.name.toLowerCase() === name.toLowerCase() && i.type === type);
+    if (existing) existing.qty += qty;
+    else this.stock.push({ name, qty, type });
+    this.saveLocal();
+    this.syncToCloudDebounced();
+  },
+
+  remove(name, qty = 1) {
+    const idx = this.stock.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+    if (idx >= 0) {
+      this.stock[idx].qty = Math.max(0, this.stock[idx].qty - qty);
+      if (this.stock[idx].qty === 0) this.stock.splice(idx, 1);
+      this.saveLocal();
+      this.syncToCloudDebounced();
+    }
+  },
+
+  /* === LocalStorage === */
+  loadLocal() {
+    try {
+      const raw = localStorage.getItem("stock_v1");
+      this.stock = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(this.stock)) this.stock = [];
+    } catch {
+      this.stock = [];
+    }
+  },
+
+  saveLocal() {
+    try {
+      localStorage.setItem("stock_v1", JSON.stringify(this.stock));
+    } catch {}
+  },
+
+  /* === Firebase Sync === */
+  async syncFromCloud() {
+    try {
+      const remote = await loadSection("stock");
+      if (Array.isArray(remote) && remote.length) {
+        console.log("☁️ Stock importé depuis Firebase :", remote);
+        this.stock = remote;
+        this.saveLocal();
+      } else {
+        console.log("ℹ️ Aucun stock trouvé sur Firebase (création d’un stock vide)");
+        await syncSection("stock", []);
+      }
+    } catch (e) {
+      console.warn("⚠️ Erreur syncFromCloud :", e);
+    }
+  },
+
+  async syncToCloudDebounced() {
+    clearTimeout(this._timer);
+    this._timer = setTimeout(async () => {
+      try {
+        await syncSection("stock", this.stock);
+        console.log("☁️ Stock synchronisé → Firebase");
+        this.setSyncState("ok");
+      } catch (e) {
+        console.warn("⚠️ Sync Firebase échouée :", e);
+        this.setSyncState("offline");
+      }
+    }, 500);
+  },
+
+  /* === Indicateur visuel === */
+  setSyncState(state) {
+    const dot = document.getElementById("sync-dot");
+    const label = document.getElementById("sync-label");
+    if (!dot || !label) return;
+    switch (state) {
+      case "ok":
+        dot.style.background = "#2e7d32";
+        label.textContent = "Sync : à jour";
+        break;
+      case "offline":
+        dot.style.background = "#d32f2f";
+        label.textContent = "Sync : hors ligne";
+        break;
+      case "syncing":
+        dot.style.background = "#f9a825";
+        label.textContent = "Sync : en cours…";
+        break;
+    }
+  },
+
+  /* === Initialisation === */
+  async init() {
+    this.loadLocal();
+    await this.syncFromCloud();
+    this.setSyncState(navigator.onLine ? "ok" : "offline");
+    console.log("[stock.js] ✅ Connecté à Firebase + LocalStorage prêt :", this.stock);
+  }
+};
+
+// 🟢 Lance automatiquement l'init
+window.StockAPI.init();
