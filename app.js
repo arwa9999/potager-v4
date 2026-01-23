@@ -154,6 +154,15 @@ import { syncSection, loadSection } from "./firebase.js";
     }catch{ return null; }
   }
   function saveLocal(st){ try{ localStorage.setItem('potager_v2', JSON.stringify(st)); }catch{} }
+// === Synchronisation Firebase ===
+async function syncParcellesToCloud() {
+  try {
+    await syncSection("parcelles", state);
+    console.log("☁️ Parcelles synchronisées sur Firebase");
+  } catch (err) {
+    console.warn("⚠️ Erreur de sync Firebase (parcelles):", err);
+  }
+}
 
   function unifyData(fileObj, localObj){
     const byId = new Map();
