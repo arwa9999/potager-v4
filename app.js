@@ -123,5 +123,10 @@ import { syncSection, loadSection } from "./firebase.js";
 
   console.log("✅ App.js initialisé avec données :", state);
 })();
+// --- Expose les fonctions clés au scope global ---
+window.ensureTitlesAndLabels = ensureTitlesAndLabels;
+window.applyRecencyColors    = applyRecencyColors;
+window.renderHistory         = renderHistory;
+window.state                 = state; // utile pour debug ou sync future
 
 })();
