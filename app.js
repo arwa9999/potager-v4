@@ -357,6 +357,7 @@ function renderHistory(id){
       family:fam
     });
     saveLocal(state);
+    syncParcellesToCloud();
     renderHistory(currentId);
     applyRecencyColors();
     applyRotationOverlay();
