@@ -95,14 +95,33 @@ import { syncSection, loadSection } from "./firebase.js";
   });
 
   /* === Chargement initial === */
-  (async function init() {
-    await loadParcellesFromCloud();
+(async function init() {
+  await loadParcellesFromCloud();
 
-    // Évite les erreurs au boot si fonctions pas encore définies
-    if (typeof window.applyRecencyColors === "function") window.applyRecencyColors();
-    if (typeof window.ensureTitlesAndLabels === "function") window.ensureTitlesAndLabels();
+  // === 1. Reconstitue les étiquettes et tooltips des parcelles ===
+  if (typeof ensureTitlesAndLabels === "function") ensureTitlesAndLabels();
+  else if (window.ensureTitlesAndLabels) window.ensureTitlesAndLabels();
 
-    console.log("✅ App.js initialisé avec données :", state);
-  })();
+  // === 2. Rafraîchit les couleurs selon la récence ===
+  if (typeof applyRecencyColors === "function") applyRecencyColors();
+  else if (window.applyRecencyColors) window.applyRecencyColors();
+
+  // === 3. Reconnecte les événements de clic sur les parcelles ===
+  $$('#garden rect.plot').forEach(plot => {
+    plot.addEventListener('click', () => {
+      currentId = +(plot.dataset.id || plot.getAttribute('data-id'));
+      const titleEl = $('#plot-title');
+      const panel = $('#info-panel');
+      if (titleEl) titleEl.textContent = `Parcelle ${currentId}`;
+      if (panel) panel.classList.remove('hidden');
+      if (typeof renderHistory === "function") renderHistory(currentId);
+    });
+  });
+
+  // === 4. Rendu initial si déjà une parcelle sélectionnée ===
+  if (currentId != null && typeof renderHistory === "function") renderHistory(currentId);
+
+  console.log("✅ App.js initialisé avec données :", state);
+})();
 
 })();
