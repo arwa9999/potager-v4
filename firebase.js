@@ -1,10 +1,7 @@
-// firebase.js — Potager v5 stable (séparation stock / parcelles)
-// Gère les synchros sectionnées sans écraser d’autres données
-
+// firebase.js — Potager v5 (sécurisé + sync bidirectionnelle)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-/* === CONFIGURATION FIREBASE === */
 const firebaseConfig = {
   apiKey: "AIzaSyDU2n_yXwYtFL7GrxZmHiqb6o1ihhmuBkU",
   authDomain: "potager-v4.firebaseapp.com",
@@ -16,71 +13,46 @@ const firebaseConfig = {
   measurementId: "G-7ZWWZH18J0"
 };
 
-/* === INITIALISATION === */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Identifiant utilisateur (local unique)
+// --- Identifiant utilisateur (persistant localement)
 const userId = localStorage.getItem("userId") || crypto.randomUUID();
 localStorage.setItem("userId", userId);
 
-console.log("🔥 Firebase initialisé — utilisateur:", userId);
+/* ==========================================================
+   🔁 API Firebase générique (lecture / écriture par section)
+   ========================================================== */
 
-/* === OUTILS === */
-function sectionPath(section) {
-  return `potager/${userId}/${section}`;
-}
-
-/* === ÉCRITURE (non destructive) === */
-export async function syncSection(section, data) {
+export async function syncSection(sectionName, data) {
   try {
-    await update(ref(db, `potager/${userId}`), { [section]: data });
-    console.log(`✅ Section "${section}" synchronisée vers Firebase`);
+    await update(ref(db, `potager/${userId}`), { [sectionName]: data });
+    console.log(`✅ Section "${sectionName}" synchronisée vers Firebase`);
   } catch (err) {
-    console.error(`⚠️ Erreur de sync Firebase (${section}):`, err);
+    console.error(`⚠️ Erreur sync section ${sectionName}:`, err);
   }
 }
 
-/* === LECTURE === */
-export async function loadSection(section) {
+export async function loadSection(sectionName) {
   try {
-    const snap = await get(child(ref(db), sectionPath(section)));
-    if (snap.exists()) {
-      console.log(`☁️ Données ${section} chargées depuis Firebase`);
-      return snap.val();
-    } else {
-      console.warn(`⚠️ Section "${section}" vide ou absente`);
+    const snapshot = await get(child(ref(db), `potager/${userId}/${sectionName}`));
+    if (!snapshot.exists()) {
+      console.log(`ℹ️ Section "${sectionName}" inexistante — renvoie []`);
       return [];
     }
+    return snapshot.val();
   } catch (err) {
-    console.error(`⚠️ Erreur de lecture Firebase (${section}):`, err);
+    console.error(`⚠️ Erreur de lecture section ${sectionName}:`, err);
     return [];
   }
 }
 
-/* === COMPATIBILITÉ ===
-   Ces fonctions sont conservées pour app.js / stock.js
-   mais redirigent vers les nouvelles versions sectionnées.
-*/
+/* === Compatibilité ancienne API === */
 export async function syncToCloud(data) {
-  return syncSection("parcelles", data);
+  await syncSection("parcelles", data);
 }
-
 export async function loadFromCloud() {
-  return loadSection("parcelles");
+  return await loadSection("parcelles");
 }
 
-/* === FONCTION BONUS : tester la connexion === */
-export async function testFirebaseConnection() {
-  try {
-    const testRef = ref(db, `potager/${userId}/_ping`);
-    await set(testRef, { time: Date.now() });
-    console.log("✅ Ping Firebase OK");
-    return true;
-  } catch (err) {
-    console.error("⚠️ Erreur de connexion Firebase:", err);
-    return false;
-  }
-}
-
-export { db, userId };
+console.log("🔥 Firebase initialisé — utilisateur:", userId);
