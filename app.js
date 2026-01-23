@@ -1,4 +1,27 @@
 /* Potager FR/NL — logique app (clean) */
+import { syncSection, loadSection } from "./firebase.js";
+
+/* === Vérification structure Firebase === */
+(async function ensureBaseStructure(){
+  try {
+    const data = await loadSection("parcelles");
+    if (!data || typeof data !== "object" || Array.isArray(data) || Object.keys(data).length === 0) {
+      console.log("🌱 Création d'une section 'parcelles' vide dans Firebase");
+      await syncSection("parcelles", {});
+    } else {
+      console.log("✅ Section 'parcelles' détectée dans Firebase");
+    }
+
+    const stockData = await loadSection("stock");
+    if (!stockData || !Array.isArray(stockData)) {
+      console.log("📦 Création d'une section 'stock' vide dans Firebase");
+      await syncSection("stock", []);
+    }
+  } catch (e) {
+    console.warn("⚠️ Impossible de vérifier la structure Firebase :", e);
+  }
+})();
+
 (function(){
   /* ===== I18N (UI de base) ===== */
   let LANG = localStorage.getItem('lang') || 'fr';
