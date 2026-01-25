@@ -128,5 +128,15 @@ window.ensureTitlesAndLabels = ensureTitlesAndLabels;
 window.applyRecencyColors    = applyRecencyColors;
 window.renderHistory         = renderHistory;
 window.state                 = state; // utile pour debug ou sync future
+// --- Correction affichage des numéros de parcelles ---
+window.addEventListener('load', () => {
+  if (typeof ensureTitlesAndLabels === "function") {
+    console.log("🪴 Recréation des labels de parcelles…");
+    ensureTitlesAndLabels();
+  }
+  if (typeof applyRecencyColors === "function") {
+    applyRecencyColors();
+  }
+});
 
 })();
