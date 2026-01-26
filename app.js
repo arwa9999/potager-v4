@@ -23,7 +23,73 @@ import { syncSection, loadSection } from "./firebase.js";
     console.warn("⚠️ Impossible de vérifier la structure Firebase :", e);
   }
 })();
+function ensureTitlesAndLabels() {
+  console.group("🔍 ensureTitlesAndLabels()");
+  try {
+    const rects = document.querySelectorAll('#garden rect.plot, svg rect.plot');
+    console.log(`➡️ ${rects.length} parcelles détectées`);
 
+    if (!rects.length) {
+      console.warn("⚠️ Aucune parcelle (#garden rect.plot) trouvée dans le DOM !");
+      console.groupEnd();
+      return;
+    }
+
+    rects.forEach(rect => {
+      const id = +(rect.dataset.id || rect.getAttribute('data-id'));
+      if (!Number.isFinite(id)) {
+        console.warn("⛔ Parcelle sans ID valide :", rect);
+        return;
+      }
+
+      // Supprimer anciens labels pour éviter doublons
+      const parent = rect.parentNode;
+      parent.querySelectorAll(`text.plot-label[data-for="${id}"]`).forEach(el => el.remove());
+
+      // Créer ou mettre à jour le <title>
+      let tit = rect.querySelector('title');
+      if (!tit) {
+        tit = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        rect.appendChild(tit);
+        console.log(`🆕 Ajout title pour parcelle ${id}`);
+      }
+
+      const name = (rect.dataset.name || '').trim();
+      tit.textContent = name ? `Parcelle ${id} — ${name}` : `Parcelle ${id}`;
+
+      // Calcul du centre
+      const x = +rect.getAttribute('x') || 0;
+      const y = +rect.getAttribute('y') || 0;
+      const w = +rect.getAttribute('width') || 0;
+      const h = +rect.getAttribute('height') || 0;
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+
+      // Taille de police proportionnelle
+      const fs = Math.max(9, Math.min(h * 0.6, w * 0.5, 16));
+
+      // Création du label
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('class', 'plot-label');
+      label.setAttribute('data-for', String(id));
+      label.setAttribute('x', cx);
+      label.setAttribute('y', cy);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('dominant-baseline', 'central');
+      label.setAttribute('font-size', fs.toFixed(1));
+      label.setAttribute('style', 'fill:#222;paint-order:stroke;stroke:#fff;stroke-width:1;pointer-events:none');
+      label.textContent = name || id;
+
+      parent.appendChild(label);
+      console.log(`✅ Label créé pour parcelle ${id}`);
+    });
+
+    console.log("🎯 Labels terminés.");
+  } catch (err) {
+    console.error("💥 Erreur dans ensureTitlesAndLabels():", err);
+  }
+  console.groupEnd();
+}
 /* =====================================================
    ===     Logique principale du potager (app.js)     ===
    ===================================================== */
@@ -54,6 +120,7 @@ import { syncSection, loadSection } from "./firebase.js";
       state = localRaw ? JSON.parse(localRaw) : { plots: [] };
     }
   }
+
 
   /* === Sauvegarde LocalStorage → Firebase === */
   async function saveParcellesToCloud() {
