@@ -24,11 +24,12 @@ import { syncSection, loadSection } from "./firebase.js";
   }
 })();
 function ensureTitlesAndLabels() {
-  console.group("🔍 ensureTitlesAndLabels() – version calibrée pour le SVG du potager");
+  console.group("🔍 ensureTitlesAndLabels() – version auto-calibrée");
   try {
-    const svg = document.querySelector('svg');
-    const garden = document.getElementById('garden');
-    const rects = garden.querySelectorAll('rect.plot');
+    const svg = document.querySelector("svg");
+    const garden = document.getElementById("garden");
+    const rects = garden.querySelectorAll("rect.plot");
+
     console.log(`➡️ ${rects.length} parcelles détectées`);
 
     if (!rects.length) {
@@ -37,23 +38,31 @@ function ensureTitlesAndLabels() {
       return;
     }
 
+    // Récupère la matrice du groupe garden
+    const gCTM = garden.getCTM();
+    const scaleX = Math.sqrt(gCTM.a * gCTM.a + gCTM.b * gCTM.b);
+    const scaleY = Math.sqrt(gCTM.c * gCTM.c + gCTM.d * gCTM.d);
+    const shearX = gCTM.c / gCTM.d; // composante horizontale du cisaillement
+    console.log(`🧮 Facteurs: scaleX=${scaleX.toFixed(3)}, scaleY=${scaleY.toFixed(3)}, shearX=${shearX.toFixed(5)}`);
+
     // Nettoyer anciens labels
-    garden.querySelectorAll('text.plot-label').forEach(el => el.remove());
+    garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
 
     rects.forEach(rect => {
-      const id = +(rect.dataset.id || rect.getAttribute('data-id'));
+      const id = +(rect.dataset.id || rect.getAttribute("data-id"));
       if (!Number.isFinite(id)) return;
 
+      const name = (rect.dataset.name || "").trim();
+
       // Ajoute ou met à jour le <title>
-      let tit = rect.querySelector('title');
+      let tit = rect.querySelector("title");
       if (!tit) {
-        tit = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        tit = document.createElementNS("http://www.w3.org/2000/svg", "title");
         rect.appendChild(tit);
       }
-      const name = (rect.dataset.name || '').trim();
       tit.textContent = name ? `Parcelle ${id} — ${name}` : `Parcelle ${id}`;
 
-      // Calcul du centre visuel
+      // Calcul du centre dans le repère visuel global
       const bbox = rect.getBBox();
       const ctm = rect.getCTM();
       const pt = svg.createSVGPoint();
@@ -61,33 +70,29 @@ function ensureTitlesAndLabels() {
       pt.y = bbox.y + bbox.height / 2;
       const transformed = pt.matrixTransform(ctm);
 
-      // ✅ Compensation du cisaillement et de l’étirement vertical
-      let cx = transformed.x - (pt.y * 0.005); // décalage léger à gauche
-      let cy = transformed.y - (bbox.height * 0.5); // remonte un peu le texte
+      // 🔧 Compensation automatique basée sur la matrice du groupe
+      const cx = transformed.x - transformed.y * shearX;
+      const cy = transformed.y - bbox.height * (scaleY - 1) / 2;
 
-      // Taille de police adaptée
-      const fs = Math.max(8, Math.min(bbox.height * 0.7, bbox.width * 0.5, 18));
+      const fs = Math.max(8, Math.min(bbox.height * scaleY * 0.7, bbox.width * scaleX * 0.5, 18));
 
-      // Création du label
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      label.setAttribute('class', 'plot-label');
-      label.setAttribute('data-for', String(id));
-      label.setAttribute('x', cx);
-      label.setAttribute('y', cy);
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('dominant-baseline', 'middle');
-      label.setAttribute('font-size', fs.toFixed(1));
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("class", "plot-label");
+      label.setAttribute("data-for", String(id));
+      label.setAttribute("x", cx);
+      label.setAttribute("y", cy);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("dominant-baseline", "central");
+      label.setAttribute("font-size", fs.toFixed(1));
       label.setAttribute(
-        'style',
-        'fill:#1b1b1b;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:2;pointer-events:none;user-select:none'
+        "style",
+        "fill:#1b1b1b;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:2;pointer-events:none;user-select:none"
       );
       label.textContent = name || id;
-
       garden.appendChild(label);
-      console.log(`✅ Label ${id} placé à (${cx.toFixed(1)}, ${cy.toFixed(1)})`);
     });
 
-    console.log("🎯 Labels recalés sur toutes les parcelles.");
+    console.log("🎯 Labels recalés automatiquement selon la matrice du SVG.");
   } catch (err) {
     console.error("💥 Erreur dans ensureTitlesAndLabels():", err);
   }
