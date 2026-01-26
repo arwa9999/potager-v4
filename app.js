@@ -24,29 +24,27 @@ import { syncSection, loadSection } from "./firebase.js";
   }
 })();
 function ensureTitlesAndLabels() {
-  console.group("🔍 ensureTitlesAndLabels()");
+  console.group("🔍 ensureTitlesAndLabels() – version adaptée au SVG matrix");
   try {
-    const rects = document.querySelectorAll('#garden rect.plot, svg rect.plot');
+    const svg = document.querySelector('svg');
+    const rects = document.querySelectorAll('#garden rect.plot');
     console.log(`➡️ ${rects.length} parcelles détectées`);
 
     if (!rects.length) {
-      console.warn("⚠️ Aucune parcelle trouvée dans le SVG !");
+      console.warn("⚠️ Aucune parcelle trouvée !");
       console.groupEnd();
       return;
     }
 
     rects.forEach(rect => {
       const id = +(rect.dataset.id || rect.getAttribute('data-id'));
-      if (!Number.isFinite(id)) {
-        console.warn("⛔ Parcelle sans ID valide :", rect);
-        return;
-      }
+      if (!Number.isFinite(id)) return;
 
-      // Supprime tout ancien label
+      // Nettoyer les anciens labels
       const parent = rect.parentNode;
       parent.querySelectorAll(`text.plot-label[data-for="${id}"]`).forEach(el => el.remove());
 
-      // Ajoute / met à jour le <title>
+      // Ajoute ou met à jour le <title>
       let tit = rect.querySelector('title');
       if (!tit) {
         tit = document.createElementNS('http://www.w3.org/2000/svg', 'title');
@@ -55,23 +53,19 @@ function ensureTitlesAndLabels() {
       const name = (rect.dataset.name || '').trim();
       tit.textContent = name ? `Parcelle ${id} — ${name}` : `Parcelle ${id}`;
 
-      // ✅ Calcul du centre robuste, même avec transformations SVG
+      // ✅ Calcul du centre dans le repère VISUEL du SVG (prend en compte tous les transforms)
       const bbox = rect.getBBox();
       const ctm = rect.getCTM();
-      let cx = bbox.x + bbox.width / 2;
-      let cy = bbox.y + bbox.height / 2;
+      const pt = svg.createSVGPoint();
+      pt.x = bbox.x + bbox.width / 2;
+      pt.y = bbox.y + bbox.height / 2;
+      const transformed = pt.matrixTransform(ctm);
 
-      if (ctm && rect.ownerSVGElement) {
-        const pt = rect.ownerSVGElement.createSVGPoint();
-        pt.x = cx;
-        pt.y = cy;
-        const global = pt.matrixTransform(ctm);
-        cx = global.x;
-        cy = global.y;
-      }
+      const cx = transformed.x;
+      const cy = transformed.y;
 
-      // Taille du texte adaptée à la taille de la parcelle
-      const fs = Math.max(9, Math.min(bbox.height * 0.6, bbox.width * 0.5, 16));
+      // Taille de police proportionnelle à la parcelle
+      const fs = Math.max(9, Math.min(bbox.height * 0.6, bbox.width * 0.5, 18));
 
       // Création du label
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -84,20 +78,23 @@ function ensureTitlesAndLabels() {
       label.setAttribute('font-size', fs.toFixed(1));
       label.setAttribute(
         'style',
-        'fill:#222;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:2;pointer-events:none;user-select:none'
+        'fill:#1b1b1b;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:2;pointer-events:none;user-select:none'
       );
       label.textContent = name || id;
 
-      parent.appendChild(label);
-      console.log(`✅ Label créé pour parcelle ${id}`);
+      // On attache directement dans le <g id="garden"> pour rester dans le bon repère
+      document.getElementById('garden').appendChild(label);
+
+      console.log(`✅ Label ${id} → (${cx.toFixed(1)}, ${cy.toFixed(1)})`);
     });
 
-    console.log("🎯 Labels terminés avec succès.");
+    console.log("🎯 Tous les labels positionnés correctement.");
   } catch (err) {
     console.error("💥 Erreur dans ensureTitlesAndLabels():", err);
   }
   console.groupEnd();
 }
+
 
 /* =====================================================
    ===     Logique principale du potager (app.js)     ===
