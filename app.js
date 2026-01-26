@@ -24,29 +24,16 @@ import { syncSection, loadSection } from "./firebase.js";
   }
 })();
 function ensureTitlesAndLabels() {
-  console.group("🔍 ensureTitlesAndLabels() – version auto-calibrée");
+  console.group("🔍 ensureTitlesAndLabels() — version repère écran (finale)");
   try {
     const svg = document.querySelector("svg");
     const garden = document.getElementById("garden");
     const rects = garden.querySelectorAll("rect.plot");
 
     console.log(`➡️ ${rects.length} parcelles détectées`);
-
-    if (!rects.length) {
-      console.warn("⚠️ Aucune parcelle trouvée !");
-      console.groupEnd();
-      return;
-    }
-
-    // Récupère la matrice du groupe garden
-    const gCTM = garden.getCTM();
-    const scaleX = Math.sqrt(gCTM.a * gCTM.a + gCTM.b * gCTM.b);
-    const scaleY = Math.sqrt(gCTM.c * gCTM.c + gCTM.d * gCTM.d);
-    const shearX = gCTM.c / gCTM.d; // composante horizontale du cisaillement
-    console.log(`🧮 Facteurs: scaleX=${scaleX.toFixed(3)}, scaleY=${scaleY.toFixed(3)}, shearX=${shearX.toFixed(5)}`);
-
-    // Nettoyer anciens labels
     garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
+
+    const svgPoint = svg.createSVGPoint();
 
     rects.forEach(rect => {
       const id = +(rect.dataset.id || rect.getAttribute("data-id"));
@@ -54,7 +41,7 @@ function ensureTitlesAndLabels() {
 
       const name = (rect.dataset.name || "").trim();
 
-      // Ajoute ou met à jour le <title>
+      // --- Création / mise à jour du <title> ---
       let tit = rect.querySelector("title");
       if (!tit) {
         tit = document.createElementNS("http://www.w3.org/2000/svg", "title");
@@ -62,23 +49,27 @@ function ensureTitlesAndLabels() {
       }
       tit.textContent = name ? `Parcelle ${id} — ${name}` : `Parcelle ${id}`;
 
-      // Calcul du centre dans le repère visuel global
+      // --- Calcul centre visuel via transformation complète ---
       const bbox = rect.getBBox();
-      const ctm = rect.getCTM();
-      const pt = svg.createSVGPoint();
-      pt.x = bbox.x + bbox.width / 2;
-      pt.y = bbox.y + bbox.height / 2;
-      const transformed = pt.matrixTransform(ctm);
+      const ctm = rect.getScreenCTM(); // 🧠 coordonnées réelles à l’écran
+      svgPoint.x = bbox.x + bbox.width / 2;
+      svgPoint.y = bbox.y + bbox.height / 2;
+      const screenPt = svgPoint.matrixTransform(ctm);
 
-      // 🔧 Compensation automatique basée sur la matrice du groupe
-      const cx = transformed.x - transformed.y * shearX;
-      const cy = transformed.y - bbox.height * (scaleY - 1) / 2;
+      // Convertit les coordonnées écran -> coordonnées SVG globales
+      const globalCTM = svg.getScreenCTM().inverse();
+      const svgPt = svgPoint.matrixTransform(globalCTM);
+      svgPt.x = screenPt.x * globalCTM.a + screenPt.y * globalCTM.c + globalCTM.e;
+      svgPt.y = screenPt.x * globalCTM.b + screenPt.y * globalCTM.d + globalCTM.f;
 
-      const fs = Math.max(8, Math.min(bbox.height * scaleY * 0.7, bbox.width * scaleX * 0.5, 18));
+      const cx = svgPt.x;
+      const cy = svgPt.y;
+
+      const fs = Math.max(8, Math.min(bbox.height * 1.2, bbox.width * 0.6, 18));
 
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
       label.setAttribute("class", "plot-label");
-      label.setAttribute("data-for", String(id));
+      label.setAttribute("data-for", id);
       label.setAttribute("x", cx);
       label.setAttribute("y", cy);
       label.setAttribute("text-anchor", "middle");
@@ -92,7 +83,7 @@ function ensureTitlesAndLabels() {
       garden.appendChild(label);
     });
 
-    console.log("🎯 Labels recalés automatiquement selon la matrice du SVG.");
+    console.log("🎯 Labels placés selon les coordonnées écran (aucun décalage).");
   } catch (err) {
     console.error("💥 Erreur dans ensureTitlesAndLabels():", err);
   }
