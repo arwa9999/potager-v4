@@ -27,10 +27,10 @@ const $$ = s => Array.from(document.querySelectorAll(s));
    ===================================================== */
 
 function ensureTitlesAndLabels() {
+  const svg = document.querySelector("svg");
   const garden = document.getElementById("garden");
-  if (!garden) return;
+  if (!svg || !garden) return;
 
-  // Supprimer anciens labels uniquement
   garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
 
   const rects = garden.querySelectorAll("rect.plot");
@@ -39,24 +39,28 @@ function ensureTitlesAndLabels() {
     const id = rect.dataset.id;
     if (!id) return;
 
-    const bbox = rect.getBBox();
-    const cx = bbox.x + bbox.width / 2;
-    const cy = bbox.y + bbox.height / 2;
+    // Position réelle à l'écran
+    const rectBox = rect.getBoundingClientRect();
+    const svgBox = svg.getBoundingClientRect();
+
+    const centerX = rectBox.left + rectBox.width / 2;
+    const centerY = rectBox.top + rectBox.height / 2;
+
+    // Conversion écran → coordonnées SVG
+    const pt = svg.createSVGPoint();
+    pt.x = centerX;
+    pt.y = centerY;
+
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
 
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", cx);
-    label.setAttribute("y", cy);
+    label.setAttribute("x", svgP.x);
+    label.setAttribute("y", svgP.y);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
-    label.setAttribute("font-size", Math.min(16, bbox.height * 0.8));
+    label.setAttribute("font-size", 14);
     label.textContent = id;
-
-    // 👇 CRUCIAL : copier le transform du rect s’il existe
-    const rectTransform = rect.getAttribute("transform");
-    if (rectTransform) {
-      label.setAttribute("transform", rectTransform);
-    }
 
     garden.appendChild(label);
   });
