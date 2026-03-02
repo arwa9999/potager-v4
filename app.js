@@ -27,46 +27,44 @@ const $$ = s => Array.from(document.querySelectorAll(s));
    ===================================================== */
 
 function ensureTitlesAndLabels() {
+  const svg = document.querySelector("svg");
   const garden = document.getElementById("garden");
-  if (!garden) return;
+  if (!svg || !garden) return;
 
-  const rects = Array.from(garden.querySelectorAll("rect.plot"));
+  garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
+
+  const rects = garden.querySelectorAll("rect.plot");
 
   rects.forEach(rect => {
     const id = rect.dataset.id;
     if (!id) return;
 
-    // Si déjà encapsulé, on ne touche pas
-    if (rect.parentNode.classList.contains("plot-group")) return;
+    // Position réelle à l'écran
+    const rectBox = rect.getBoundingClientRect();
+    const svgBox = svg.getBoundingClientRect();
 
-    const bbox = rect.getBBox();
+    const centerX = rectBox.left + rectBox.width / 2;
+    const centerY = rectBox.top + rectBox.height / 2;
 
-    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    group.setAttribute("class", "plot-group");
+    // Conversion écran → coordonnées SVG
+    const pt = svg.createSVGPoint();
+    pt.x = centerX;
+    pt.y = centerY;
 
-    // Copier les transformations du rect au groupe
-    const transform = rect.getAttribute("transform");
-    if (transform) group.setAttribute("transform", transform);
-
-    // Supprimer transform du rect (important)
-    rect.removeAttribute("transform");
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
 
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", bbox.x + bbox.width / 2);
-    label.setAttribute("y", bbox.y + bbox.height / 2);
+    label.setAttribute("x", svgP.x);
+    label.setAttribute("y", svgP.y);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", 14);
     label.textContent = id;
 
-    // Remplacer rect par group contenant rect + text
-    rect.parentNode.insertBefore(group, rect);
-    group.appendChild(rect);
-    group.appendChild(label);
+    garden.appendChild(label);
   });
 }
-
 /* =====================================================
    ===  COLORATION PAR RÉCENCE
    ===================================================== */
