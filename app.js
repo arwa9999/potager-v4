@@ -1,33 +1,35 @@
-/* Potager FR/NL — logique app (v5.2 - Firebase sync bidirectionnelle) */
+/* =====================================================
+   🌱 POTAGER — APP.JS VERSION STABLE FINALE
+   ===================================================== */
+
 import { syncSection, loadSection } from "./firebase.js";
 
 /* =====================================================
-   ===  Vérification structure Firebase au démarrage  ===
+   ===  VARIABLES GLOBALES
    ===================================================== */
-(async function ensureBaseStructure() {
-  try {
-    const parcelles = await loadSection("parcelles");
-    if (!parcelles || typeof parcelles !== "object" || Array.isArray(parcelles)) {
-      console.log("🌱 Création d'une section 'parcelles' vide dans Firebase");
-      await syncSection("parcelles", {});
-    } else {
-      console.log("✅ Section 'parcelles' détectée dans Firebase");
-    }
 
-    const stockData = await loadSection("stock");
-    if (!stockData || !Array.isArray(stockData)) {
-      console.log("📦 Création d'une section 'stock' vide dans Firebase");
-      await syncSection("stock", []);
-    }
-  } catch (e) {
-    console.warn("⚠️ Impossible de vérifier la structure Firebase :", e);
-  }
-})();
+let state = { plots: [] };
+let currentId = null;
+
+let companions = {};
+let cultures = {};
+let families = {};
+
+/* =====================================================
+   ===  UTILITAIRES DOM
+   ===================================================== */
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* =====================================================
+   ===  NUMÉROS DES PARCELLES (VERSION SIMPLE ET STABLE)
+   ===================================================== */
+
 function ensureTitlesAndLabels() {
   const garden = document.getElementById("garden");
   if (!garden) return;
 
-  // Supprimer anciens labels
   garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
 
   const rects = garden.querySelectorAll("rect.plot");
@@ -37,7 +39,6 @@ function ensureTitlesAndLabels() {
     if (!id) return;
 
     const bbox = rect.getBBox();
-
     const cx = bbox.x + bbox.width / 2;
     const cy = bbox.y + bbox.height / 2;
 
@@ -48,131 +49,153 @@ function ensureTitlesAndLabels() {
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", Math.min(16, bbox.height * 0.8));
-    label.setAttribute("fill", "#1f3b1f");
-    label.setAttribute("pointer-events", "none");
-
     label.textContent = id;
 
-    // IMPORTANT : append dans garden
     garden.appendChild(label);
   });
 }
 
+/* =====================================================
+   ===  COLORATION PAR RÉCENCE
+   ===================================================== */
+
+function applyRecencyColors() {
+  const plots = state.plots || [];
+
+  document.querySelectorAll('#garden rect.plot').forEach(rect => {
+    const id = +rect.dataset.id;
+    const plot = plots.find(p => p.id === id);
+
+    if (!plot || !plot.history?.length) {
+      rect.setAttribute("fill", "#bfe3b4");
+      return;
+    }
+
+    const last = plot.history[0];
+    const days = (Date.now() - new Date(last.date)) / 86400000;
+
+    if (days < 45) rect.setAttribute("fill", "#a5d6a7");
+    else if (days < 120) rect.setAttribute("fill", "#ffecb3");
+    else rect.setAttribute("fill", "#ffcdd2");
+  });
+}
 
 /* =====================================================
-   ===     Logique principale du potager (app.js)     ===
+   ===  HISTORIQUE
    ===================================================== */
-(function () {
-  const $ = s => document.querySelector(s);
-  const $$ = s => Array.from(document.querySelectorAll(s));
 
-  /* === État global === */
-  let state = { plots: [] };
-  let currentId = null;
+function renderHistory(id) {
+  const plot = state.plots.find(p => p.id === id);
+  const div = $('#history');
+  if (!div) return;
 
-  /* === Chargement Firebase → LocalStorage au démarrage === */
-  async function loadParcellesFromCloud() {
-    try {
-      const remote = await loadSection("parcelles");
-      if (remote && typeof remote === "object" && !Array.isArray(remote) && Object.keys(remote).length > 0) {
-        console.log("☁️ Parcelles importées depuis Firebase");
-        localStorage.setItem("potager_v2", JSON.stringify(remote));
-        state = remote;
-      } else {
-        console.warn("⚠️ Aucune donnée de parcelles trouvée sur Firebase, utilisation du localStorage");
-        const localRaw = localStorage.getItem("potager_v2");
-        state = localRaw ? JSON.parse(localRaw) : { plots: [] };
-      }
-    } catch (e) {
-      console.error("⚠️ Erreur de chargement des parcelles Firebase :", e);
+  if (!plot || !plot.history?.length) {
+    div.innerHTML = "—";
+    return;
+  }
+
+  div.innerHTML = plot.history.map(h =>
+    `<div class="entry">
+       <strong>${h.date}</strong><br>
+       ${h.action} — ${h.culture || ''}
+     </div>`
+  ).join('');
+}
+
+/* =====================================================
+   ===  FIREBASE SYNC
+   ===================================================== */
+
+async function loadParcellesFromCloud() {
+  try {
+    const remote = await loadSection("parcelles");
+
+    if (remote && typeof remote === "object" && Object.keys(remote).length) {
+      state = remote;
+      localStorage.setItem("potager_v2", JSON.stringify(remote));
+    } else {
       const localRaw = localStorage.getItem("potager_v2");
       state = localRaw ? JSON.parse(localRaw) : { plots: [] };
     }
+  } catch {
+    const localRaw = localStorage.getItem("potager_v2");
+    state = localRaw ? JSON.parse(localRaw) : { plots: [] };
   }
+}
 
+async function saveParcellesToCloud() {
+  await syncSection("parcelles", state);
+}
 
-  /* === Sauvegarde LocalStorage → Firebase === */
-  async function saveParcellesToCloud() {
-    try {
-      await syncSection("parcelles", state);
-      console.log("✅ Parcelles sauvegardées sur Firebase");
-    } catch (err) {
-      console.warn("⚠️ Erreur de sauvegarde Firebase :", err);
-    }
-  }
+/* =====================================================
+   ===  CHARGEMENT DES DONNÉES STATIQUES
+   ===================================================== */
 
-  /* === Exemple d’appel (recopie ton code historique ici) === */
-  function renderHistory(id) {
-    const plot = (state.plots || []).find(p => p.id === id);
-    const div = document.getElementById("history");
-    if (!plot || !plot.history?.length) {
-      div.innerHTML = "—";
-      return;
-    }
-    div.innerHTML = plot.history.map(h =>
-      `<div class='entry'><strong>${h.date}</strong> — ${h.action} — ${h.culture || ''}</div>`
-    ).join('');
-  }
+async function loadStaticData() {
+  companions = await fetch("./companions_bilingual.json").then(r => r.json());
+  cultures = await fetch("./cultDict.json").then(r => r.json());
+  families = await fetch("./families.json").then(r => r.json());
+}
 
-  /* === Exemple d’événement === */
+/* =====================================================
+   ===  AJOUT D’UNE ACTION
+   ===================================================== */
+
+function setupSaveButton() {
   $('#save')?.addEventListener('click', async () => {
-    const d = $('#date').value || new Date().toISOString().slice(0, 10);
-    const a = $('#action').value;
-    const c = $('#culture').value;
-    if (!a || !c || currentId == null) return;
+    const date = $('#date').value || new Date().toISOString().slice(0, 10);
+    const action = $('#action').value;
+    const culture = $('#culture').value;
 
-    const p = state.plots.find(x => x.id === currentId) || { id: currentId, history: [] };
-    p.history.unshift({ date: d, action: a, culture: c });
-    if (!state.plots.some(x => x.id === currentId)) state.plots.push(p);
+    if (!action || !culture || currentId == null) return;
+
+    let plot = state.plots.find(p => p.id === currentId);
+    if (!plot) {
+      plot = { id: currentId, history: [] };
+      state.plots.push(plot);
+    }
+
+    plot.history.unshift({ date, action, culture });
 
     localStorage.setItem("potager_v2", JSON.stringify(state));
+
     renderHistory(currentId);
+    applyRecencyColors();
     await saveParcellesToCloud();
   });
+}
 
-  /* === Chargement initial === */
-(async function init() {
-  await loadParcellesFromCloud();
+/* =====================================================
+   ===  CLIC SUR PARCELLES
+   ===================================================== */
 
-  // === 1. Reconstitue les étiquettes et tooltips des parcelles ===
-  if (typeof ensureTitlesAndLabels === "function") ensureTitlesAndLabels();
-  else if (window.ensureTitlesAndLabels) window.ensureTitlesAndLabels();
-
-  // === 2. Rafraîchit les couleurs selon la récence ===
-  if (typeof applyRecencyColors === "function") applyRecencyColors();
-  else if (window.applyRecencyColors) window.applyRecencyColors();
-
-  // === 3. Reconnecte les événements de clic sur les parcelles ===
+function setupPlotClicks() {
   $$('#garden rect.plot').forEach(plot => {
     plot.addEventListener('click', () => {
-      currentId = +(plot.dataset.id || plot.getAttribute('data-id'));
-      const titleEl = $('#plot-title');
-      const panel = $('#info-panel');
-      if (titleEl) titleEl.textContent = `Parcelle ${currentId}`;
-      if (panel) panel.classList.remove('hidden');
-      if (typeof renderHistory === "function") renderHistory(currentId);
+      currentId = +plot.dataset.id;
+
+      $('#plot-title').textContent = `Parcelle ${currentId}`;
+      $('#info-panel').classList.remove('hidden');
+
+      renderHistory(currentId);
     });
   });
+}
 
-  // === 4. Rendu initial si déjà une parcelle sélectionnée ===
-  if (currentId != null && typeof renderHistory === "function") renderHistory(currentId);
+/* =====================================================
+   ===  INITIALISATION
+   ===================================================== */
 
-  console.log("✅ App.js initialisé avec données :", state);
-})();
-// --- Expose les fonctions clés au scope global ---
-window.ensureTitlesAndLabels = ensureTitlesAndLabels;
-window.applyRecencyColors    = applyRecencyColors;
-window.renderHistory         = renderHistory;
-window.state                 = state; // utile pour debug ou sync future
-// --- Correction affichage des numéros de parcelles ---
-window.addEventListener('load', () => {
-  if (typeof ensureTitlesAndLabels === "function") {
-    console.log("🪴 Recréation des labels de parcelles…");
-    ensureTitlesAndLabels();
-  }
-  if (typeof applyRecencyColors === "function") {
-    applyRecencyColors();
-  }
-});
+async function init() {
+  await loadStaticData();
+  await loadParcellesFromCloud();
 
-})();
+  ensureTitlesAndLabels();
+  applyRecencyColors();
+  setupPlotClicks();
+  setupSaveButton();
+
+  console.log("✅ Potager initialisé proprement");
+}
+
+document.addEventListener("DOMContentLoaded", init);
