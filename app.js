@@ -39,24 +39,28 @@ function ensureTitlesAndLabels() {
     const id = rect.dataset.id;
     if (!id) return;
 
-    // Position réelle à l'écran
-    const rectBox = rect.getBoundingClientRect();
-    const svgBox = svg.getBoundingClientRect();
+    const bbox = rect.getBBox();
 
-    const centerX = rectBox.left + rectBox.width / 2;
-    const centerY = rectBox.top + rectBox.height / 2;
+    const localCenter = svg.createSVGPoint();
+    localCenter.x = bbox.x + bbox.width / 2;
+    localCenter.y = bbox.y + bbox.height / 2;
 
-    // Conversion écran → coordonnées SVG
+    // transformation complète du rectangle (groupe + transform individuel)
+    const matrix = rect.getCTM();
+    const globalCenter = localCenter.matrixTransform(matrix);
+
+    // convertir dans le repère du SVG
+    const inverse = svg.getScreenCTM().inverse();
     const pt = svg.createSVGPoint();
-    pt.x = centerX;
-    pt.y = centerY;
+    pt.x = globalCenter.x;
+    pt.y = globalCenter.y;
 
-    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const svgPoint = pt.matrixTransform(inverse);
 
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", svgP.x);
-    label.setAttribute("y", svgP.y);
+    label.setAttribute("x", svgPoint.x);
+    label.setAttribute("y", svgPoint.y);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", 14);
