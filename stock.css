@@ -3,7 +3,7 @@ text.plot-label {
   fill: #222;                     /* Couleur du texte bien lisible */
   font-weight: 600;
   paint-order: stroke;
-  stroke: #fff;                   /* Contour blanc autour du texte */
+  stroke: #ffffff;                   /* Contour blanc autour du texte */
   stroke-width: 2px;
   text-anchor: middle;
   dominant-baseline: central;
@@ -14,7 +14,7 @@ text.plot-label {
 /* Petits écrans / zoom : réduit un peu les étiquettes */
 @media (max-width: 768px) {
   text.plot-label {
-    font-size: 10px !important;
+    font-size: 10px; 
     stroke-width: 1.5px;
   }
 }
@@ -180,6 +180,7 @@ rect.plot:hover {
   opacity: 1;
   pointer-events: all;
 }
+
 
 
 
