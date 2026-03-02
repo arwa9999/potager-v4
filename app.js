@@ -30,7 +30,7 @@ function ensureTitlesAndLabels() {
   const garden = document.getElementById("garden");
   if (!garden) return;
 
-  // Nettoyage
+  // Supprimer anciens labels uniquement
   garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
 
   const rects = garden.querySelectorAll("rect.plot");
@@ -40,28 +40,23 @@ function ensureTitlesAndLabels() {
     if (!id) return;
 
     const bbox = rect.getBBox();
-
-    // centre local
-    const cxLocal = bbox.x + bbox.width / 2;
-    const cyLocal = bbox.y + bbox.height / 2;
-
-    // appliquer la transformation propre au rect
-    const ctm = rect.getCTM();
-
-    const point = garden.ownerSVGElement.createSVGPoint();
-    point.x = cxLocal;
-    point.y = cyLocal;
-
-    const transformed = point.matrixTransform(ctm);
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
 
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", transformed.x);
-    label.setAttribute("y", transformed.y);
+    label.setAttribute("x", cx);
+    label.setAttribute("y", cy);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", Math.min(16, bbox.height * 0.8));
     label.textContent = id;
+
+    // 👇 CRUCIAL : copier le transform du rect s’il existe
+    const rectTransform = rect.getAttribute("transform");
+    if (rectTransform) {
+      label.setAttribute("transform", rectTransform);
+    }
 
     garden.appendChild(label);
   });
