@@ -24,72 +24,39 @@ import { syncSection, loadSection } from "./firebase.js";
   }
 })();
 function ensureTitlesAndLabels() {
-  console.group("🔍 ensureTitlesAndLabels() — version repère écran (finale)");
-  try {
-    const svg = document.querySelector("svg");
-    const garden = document.getElementById("garden");
-    const rects = garden.querySelectorAll("rect.plot");
+  const garden = document.getElementById("garden");
+  if (!garden) return;
 
-    console.log(`➡️ ${rects.length} parcelles détectées`);
-    garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
+  // Supprimer anciens labels
+  garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
 
-    const svgPoint = svg.createSVGPoint();
+  const rects = garden.querySelectorAll("rect.plot");
 
-    rects.forEach(rect => {
-      const id = +(rect.dataset.id || rect.getAttribute("data-id"));
-      if (!Number.isFinite(id)) return;
+  rects.forEach(rect => {
+    const id = rect.dataset.id;
+    if (!id) return;
 
-      const name = (rect.dataset.name || "").trim();
+    const bbox = rect.getBBox();
 
-      // --- Création / mise à jour du <title> ---
-      let tit = rect.querySelector("title");
-      if (!tit) {
-        tit = document.createElementNS("http://www.w3.org/2000/svg", "title");
-        rect.appendChild(tit);
-      }
-      tit.textContent = name ? `Parcelle ${id} — ${name}` : `Parcelle ${id}`;
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
 
-      // --- Calcul centre visuel via transformation complète ---
-      const bbox = rect.getBBox();
-      const ctm = rect.getScreenCTM(); // 🧠 coordonnées réelles à l’écran
-      svgPoint.x = bbox.x + bbox.width / 2;
-      svgPoint.y = bbox.y + bbox.height / 2;
-      const screenPt = svgPoint.matrixTransform(ctm);
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("class", "plot-label");
+    label.setAttribute("x", cx);
+    label.setAttribute("y", cy);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("dominant-baseline", "central");
+    label.setAttribute("font-size", Math.min(16, bbox.height * 0.8));
+    label.setAttribute("fill", "#1f3b1f");
+    label.setAttribute("pointer-events", "none");
 
-      // Convertit les coordonnées écran -> coordonnées SVG globales
-      const globalCTM = svg.getScreenCTM().inverse();
-      const svgPt = svgPoint.matrixTransform(globalCTM);
-      svgPt.x = screenPt.x * globalCTM.a + screenPt.y * globalCTM.c + globalCTM.e;
-      svgPt.y = screenPt.x * globalCTM.b + screenPt.y * globalCTM.d + globalCTM.f;
+    label.textContent = id;
 
-      const cx = svgPt.x;
-      const cy = svgPt.y;
-
-      const fs = Math.max(8, Math.min(bbox.height * 1.2, bbox.width * 0.6, 18));
-
-      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      label.setAttribute("class", "plot-label");
-      label.setAttribute("data-for", id);
-      label.setAttribute("x", cx);
-      label.setAttribute("y", cy);
-      label.setAttribute("text-anchor", "middle");
-      label.setAttribute("dominant-baseline", "central");
-      label.setAttribute("font-size", fs.toFixed(1));
-      label.setAttribute(
-        "style",
-        "fill:#1b1b1b;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:2;pointer-events:none;user-select:none"
-      );
-      label.textContent = name || id;
-      garden.appendChild(label);
-    });
-
-    console.log("🎯 Labels placés selon les coordonnées écran (aucun décalage).");
-  } catch (err) {
-    console.error("💥 Erreur dans ensureTitlesAndLabels():", err);
-  }
-  console.groupEnd();
+    // IMPORTANT : append dans garden
+    garden.appendChild(label);
+  });
 }
-
 
 
 /* =====================================================
