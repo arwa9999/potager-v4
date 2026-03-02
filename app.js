@@ -27,46 +27,43 @@ const $$ = s => Array.from(document.querySelectorAll(s));
    ===================================================== */
 
 function ensureTitlesAndLabels() {
-  const svg = document.querySelector("svg");
   const garden = document.getElementById("garden");
-  if (!svg || !garden) return;
+  if (!garden) return;
 
-  garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
-
-  const rects = garden.querySelectorAll("rect.plot");
+  const rects = Array.from(garden.querySelectorAll("rect.plot"));
 
   rects.forEach(rect => {
     const id = rect.dataset.id;
     if (!id) return;
 
+    // Si déjà encapsulé, on ne touche pas
+    if (rect.parentNode.classList.contains("plot-group")) return;
+
     const bbox = rect.getBBox();
 
-    const localCenter = svg.createSVGPoint();
-    localCenter.x = bbox.x + bbox.width / 2;
-    localCenter.y = bbox.y + bbox.height / 2;
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute("class", "plot-group");
 
-    // transformation complète du rectangle (groupe + transform individuel)
-    const matrix = rect.getCTM();
-    const globalCenter = localCenter.matrixTransform(matrix);
+    // Copier les transformations du rect au groupe
+    const transform = rect.getAttribute("transform");
+    if (transform) group.setAttribute("transform", transform);
 
-    // convertir dans le repère du SVG
-    const inverse = svg.getScreenCTM().inverse();
-    const pt = svg.createSVGPoint();
-    pt.x = globalCenter.x;
-    pt.y = globalCenter.y;
-
-    const svgPoint = pt.matrixTransform(inverse);
+    // Supprimer transform du rect (important)
+    rect.removeAttribute("transform");
 
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", svgPoint.x);
-    label.setAttribute("y", svgPoint.y);
+    label.setAttribute("x", bbox.x + bbox.width / 2);
+    label.setAttribute("y", bbox.y + bbox.height / 2);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", 14);
     label.textContent = id;
 
-    garden.appendChild(label);
+    // Remplacer rect par group contenant rect + text
+    rect.parentNode.insertBefore(group, rect);
+    group.appendChild(rect);
+    group.appendChild(label);
   });
 }
 
