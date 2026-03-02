@@ -39,24 +39,24 @@ function ensureTitlesAndLabels() {
     const id = rect.dataset.id;
     if (!id) return;
 
-    // Position réelle à l'écran
-    const rectBox = rect.getBoundingClientRect();
-    const svgBox = svg.getBoundingClientRect();
+    const bbox = rect.getBBox();
 
-    const centerX = rectBox.left + rectBox.width / 2;
-    const centerY = rectBox.top + rectBox.height / 2;
+    // centre local
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
 
-    // Conversion écran → coordonnées SVG
     const pt = svg.createSVGPoint();
-    pt.x = centerX;
-    pt.y = centerY;
+    pt.x = cx;
+    pt.y = cy;
 
-    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    // transformation complète du rectangle
+    const ctm = rect.getCTM();
+    const globalPoint = pt.matrixTransform(ctm);
 
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", svgP.x);
-    label.setAttribute("y", svgP.y);
+    label.setAttribute("x", globalPoint.x);
+    label.setAttribute("y", globalPoint.y);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", 14);
