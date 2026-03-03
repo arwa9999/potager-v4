@@ -2,8 +2,13 @@
    🌱 POTAGER — VERSION STABLE CONSOLIDÉE
    ===================================================== */
 
-import { syncSection, loadSection } from "./firebase.js";
+/*import { syncSection, loadSection } from "./firebase.js";*/
+import { listenSection } from "./firebase.js";
 
+listenSection("parcelles", data => {
+  state = data || { plots: [] };
+  renderHistory(currentId);
+});
 /* =====================================================
    === VARIABLES GLOBALES
    ===================================================== */
