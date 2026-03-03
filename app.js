@@ -1,14 +1,9 @@
 /* =====================================================
-   🌱 POTAGER — VERSION STABLE CONSOLIDÉE
+   🌱 POTAGER — VERSION STABLE COLLABORATIVE
    ===================================================== */
 
-/*import { syncSection, loadSection } from "./firebase.js";*/
-import { listenSection } from "./firebase.js";
+import { listenSection, syncSection } from "./firebase.js";
 
-listenSection("parcelles", data => {
-  state = data || { plots: [] };
-  renderHistory(currentId);
-});
 /* =====================================================
    === VARIABLES GLOBALES
    ===================================================== */
@@ -20,6 +15,18 @@ let currentLang = "fr";
 let companions = {};
 let cultures = {};
 let families = {};
+
+/* =====================================================
+   === FIREBASE TEMPS RÉEL
+   ===================================================== */
+
+listenSection("parcelles", data => {
+  state = data || { plots: [] };
+
+  if (currentId) {
+    renderHistory(currentId);
+  }
+});
 
 /* =====================================================
    === I18N
@@ -49,10 +56,11 @@ function applyTranslations() {
    ===================================================== */
 
 const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
+
 /* =====================================================
-   === panneau latéral parcelle
+   === PANNEAU LATÉRAL / CLIC PARCELLES
    ===================================================== */
+
 function setupPlotClicks() {
   const garden = document.getElementById("garden");
 
@@ -62,10 +70,10 @@ function setupPlotClicks() {
 
     currentId = rect.dataset.id;
 
-    document.getElementById("plot-title").textContent = `Parcelle ${currentId}`;
-    document.getElementById("info-panel").classList.remove("hidden");
+    $("#plot-title").textContent = `Parcelle ${currentId}`;
+    $("#info-panel").classList.remove("hidden");
 
-    // RESET FORMULAIRE
+    // Reset formulaire
     $("#date").value = "";
     $("#action").value = "";
     $("#culture").value = "";
@@ -76,6 +84,9 @@ function setupPlotClicks() {
   });
 }
 
+/* =====================================================
+   === HISTORIQUE
+   ===================================================== */
 
 function renderHistory(id) {
   const plot = state.plots.find(p => p.id == id);
@@ -94,7 +105,6 @@ function renderHistory(id) {
      </div>`
   ).join("");
 }
-
 
 /* =====================================================
    === SELECTS DYNAMIQUES
@@ -193,26 +203,26 @@ function ensureTitlesAndLabels() {
   const svg = document.querySelector("svg");
   const garden = document.getElementById("garden");
   if (!svg || !garden) return;
+
   garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
-  const rects = garden.querySelectorAll("rect.plot");
-  rects.forEach(rect => {
+
+  garden.querySelectorAll("rect.plot").forEach(rect => {
     const id = rect.dataset.id;
     if (!id) return;
+
     const bbox = rect.getBBox();
     const cx = bbox.x + bbox.width / 2;
     const cy = bbox.y + bbox.height / 2;
+
     const pt = svg.createSVGPoint();
     pt.x = cx;
     pt.y = cy;
 
-    // matrice du rectangle
     const rectMatrix = rect.getCTM();
-
-    // matrice du garden
     const gardenMatrix = garden.getCTM();
-    // on neutralise la matrice du parent
     const relativeMatrix = gardenMatrix.inverse().multiply(rectMatrix);
     const finalPoint = pt.matrixTransform(relativeMatrix);
+
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
     label.setAttribute("x", finalPoint.x);
@@ -220,18 +230,20 @@ function ensureTitlesAndLabels() {
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", 14);
-     label.setAttribute("pointer-events", "none"); 
+    label.setAttribute("pointer-events", "none");
     label.textContent = id;
+
     garden.appendChild(label);
   });
 }
 
 /* =====================================================
-   === Btn enregistrer
+   === ENREGISTREMENT
    ===================================================== */
+
 function setupSaveButton() {
-   await loadParcellesFromCloud();
   $("#save")?.addEventListener("click", async () => {
+
     const date = $("#date").value || new Date().toISOString().slice(0,10);
     const action = $("#action").value;
     const culture = $("#culture").value;
@@ -242,6 +254,7 @@ function setupSaveButton() {
     }
 
     let plot = state.plots.find(p => p.id == currentId);
+
     if (!plot) {
       plot = { id: Number(currentId), history: [] };
       state.plots.push(plot);
@@ -249,37 +262,12 @@ function setupSaveButton() {
 
     plot.history.unshift({ date, action, culture });
 
-    await saveParcellesToCloud();
+    await syncSection("parcelles", state);
+
     renderHistory(currentId);
 
     console.log("💾 Action enregistrée");
   });
-}
-
-
-
-
-
-
-
-
-/* =====================================================
-   === FIREBASE
-   ===================================================== */
-
-async function loadParcellesFromCloud() {
-  const remote = await loadSection("parcelles");
-
-  if (!remote) {
-    state = { plots: [] };
-    return;
-  }
-
-  state = remote;
-}
-
-async function saveParcellesToCloud() {
-  await syncSection("parcelles", state);
 }
 
 /* =====================================================
@@ -298,15 +286,16 @@ async function loadStaticData() {
 
 async function init() {
   await loadStaticData();
-  await loadParcellesFromCloud();
 
   populateCultureSelect();
   populateFamilySelect();
   populateActionSelect();
   applyTranslations();
-   setupSaveButton();
+
   ensureTitlesAndLabels();
-   setupPlotClicks() 
+  setupPlotClicks();
+  setupSaveButton();
+
   $("#culture")?.addEventListener("change", e => {
     updateCompanions(e.target.value);
   });
@@ -319,7 +308,7 @@ async function init() {
     applyTranslations();
   });
 
-  console.log("✅ Application stabilisée");
+  console.log("✅ Application stabilisée (mode collaboratif)");
 }
 
 document.addEventListener("DOMContentLoaded", init);
