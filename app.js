@@ -126,15 +126,15 @@ function getCurrentCulture(plot) {
 }
 
 function populateCultureSelect() {
-  const select = $("#culture");
+  const select = document.getElementById("culture");
   if (!select) return;
 
   select.innerHTML = '<option value="">--</option>';
 
-  Object.keys(cultures).forEach(key => {
+  companions.forEach(item => {
     const opt = document.createElement("option");
-    opt.value = key;
-    opt.textContent = cultures[key][currentLang] || key;
+    opt.value = item.key; // ⚠️ clé réelle JSON
+    opt.textContent = item[currentLang];
     select.appendChild(opt);
   });
 }
