@@ -46,6 +46,17 @@ function applyTranslations() {
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 
+function setupPlotClicks() {
+  document.querySelectorAll("#garden rect.plot").forEach(plot => {
+    plot.addEventListener("click", () => {
+      const id = plot.dataset.id;
+      console.log("Parcelle cliquée :", id);
+
+      document.getElementById("plot-title").textContent = `Parcelle ${id}`;
+      document.getElementById("info-panel").classList.remove("hidden");
+    });
+  });
+}
 /* =====================================================
    === SELECTS DYNAMIQUES
    ===================================================== */
@@ -213,7 +224,7 @@ async function init() {
   applyTranslations();
 
   ensureTitlesAndLabels();
-
+   setupPlotClicks() 
   $("#culture")?.addEventListener("change", e => {
     updateCompanions(e.target.value);
   });
