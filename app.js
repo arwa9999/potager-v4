@@ -200,7 +200,7 @@ async function init() {
   await loadStaticData();
   await loadParcellesFromCloud();
 
-  ensureTitlesAndLabels();
+  window.ensureTitlesAndLabels = ensureTitlesAndLabels;
   applyRecencyColors();
   setupPlotClicks();
   setupSaveButton();
