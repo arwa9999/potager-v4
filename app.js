@@ -43,7 +43,7 @@ function populateFamilySelect() {
   if (rotSelect) rotSelect.innerHTML = '<option value="">Toutes</option>';
 
   Object.keys(families).forEach(key => {
-    const label = families[key].fr || key;   // 👈 ici la correction
+    const label = families[key][currentLang] || key;
 
     const opt = document.createElement("option");
     opt.value = key;
@@ -51,25 +51,32 @@ function populateFamilySelect() {
     select.appendChild(opt);
 
     if (rotSelect) {
-      const opt2 = opt.cloneNode(true);
-      rotSelect.appendChild(opt2);
+      rotSelect.appendChild(opt.cloneNode(true));
     }
   });
 }
 /* =====================================================
 les cultures
    ===================================================== */
-function populateCultureSelect() {
-  const select = document.getElementById("culture");
-  if (!select || !cultures) return;
+function populateFamilySelect() {
+  const select = document.getElementById("family");
+  const rotSelect = document.getElementById("rot-family");
+  if (!select || !families) return;
 
-  select.innerHTML = '<option value="">-- Choisir --</option>';
+  select.innerHTML = '<option value="">--</option>';
+  if (rotSelect) rotSelect.innerHTML = '<option value="">Toutes</option>';
 
-  Object.keys(cultures).forEach(key => {
-    const option = document.createElement("option");
-    option.value = key;
-    option.textContent = cultures[key].fr || key;
-    select.appendChild(option);
+  Object.keys(families).forEach(key => {
+    const label = families[key][currentLang] || key;
+
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = label;
+    select.appendChild(opt);
+
+    if (rotSelect) {
+      rotSelect.appendChild(opt.cloneNode(true));
+    }
   });
 }
 function populateActionSelect() {
@@ -77,8 +84,19 @@ function populateActionSelect() {
   const filterSelect = document.getElementById("f-action");
   if (!select) return;
 
-  const actions = ["Semis", "Plantation", "Récolte", "Arrachage", "Engrais"];
-
+  const actions = {
+  Semis: { fr: "Semis", nl: "Zaaien" },
+  Plantation: { fr: "Plantation", nl: "Aanplanting" },
+  Récolte: { fr: "Récolte", nl: "Oogst" },
+  Arrachage: { fr: "Arrachage", nl: "Verwijderen" },
+  Engrais: { fr: "Engrais", nl: "Bemesting" }
+};
+Object.keys(actions).forEach(key => {
+  const opt = document.createElement("option");
+  opt.value = key;
+  opt.textContent = actions[key][currentLang];
+  select.appendChild(opt);
+});
   select.innerHTML = '<option value="">-- Choisir --</option>';
   if (filterSelect) filterSelect.innerHTML = '<option value="">Toutes</option>';
 
