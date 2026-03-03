@@ -91,7 +91,7 @@ showCompanionsForCurrentPlot(currentId);
 
 function renderHistory(id) {
   const plot = state.plots.find(p => p.id == id);
-  const div = $("#history");
+  const div = document.getElementById("history");
   if (!div) return;
 
   if (!plot || !plot.history?.length) {
@@ -99,14 +99,22 @@ function renderHistory(id) {
     return;
   }
 
-  div.innerHTML = plot.history.map(h =>
-    `<div class="entry">
-       <strong>${h.date}</strong><br>
-       ${h.action} — ${h.culture}
-     </div>`
-  ).join("");
-}
+  div.innerHTML = plot.history.map(h => {
 
+    const cultureObj = companions.find(c => c.key === h.culture);
+    const cultureLabel = cultureObj
+      ? cultureObj[currentLang]
+      : h.culture;
+
+    return `
+      <div class="entry">
+        <strong>${h.date}</strong><br>
+        ${h.action} — ${cultureLabel}
+      </div>
+    `;
+
+  }).join("");
+}
 /* =====================================================
    === SELECTS DYNAMIQUES
    ===================================================== */
@@ -359,13 +367,19 @@ async function init() {
     updateCompanions(e.target.value);
   });
 
-  $("#lang-toggle")?.addEventListener("click", () => {
-    currentLang = currentLang === "fr" ? "nl" : "fr";
-    populateCultureSelect();
-    populateFamilySelect();
-    populateActionSelect();
-    applyTranslations();
-  });
+  document.getElementById("lang-toggle")?.addEventListener("click", () => {
+  currentLang = currentLang === "fr" ? "nl" : "fr";
+
+  populateCultureSelect();
+  populateFamilySelect();
+  populateActionSelect();
+  applyTranslations();
+
+  if (currentId) {
+    renderHistory(currentId);
+    showCompanionsForCurrentPlot(currentId);
+  }
+});
 
   console.log("✅ Application stabilisée (mode collaboratif)");
 }
