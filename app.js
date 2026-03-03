@@ -140,29 +140,37 @@ function updateCompanions(cultureKey) {
    ===================================================== */
 
 function ensureTitlesAndLabels() {
+  const svg = document.querySelector("svg");
   const garden = document.getElementById("garden");
-  if (!garden) return;
-
+  if (!svg || !garden) return;
   garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
-
-  garden.querySelectorAll("rect.plot").forEach(rect => {
+  const rects = garden.querySelectorAll("rect.plot");
+  rects.forEach(rect => {
     const id = rect.dataset.id;
     if (!id) return;
-
     const bbox = rect.getBBox();
-
     const cx = bbox.x + bbox.width / 2;
     const cy = bbox.y + bbox.height / 2;
+    const pt = svg.createSVGPoint();
+    pt.x = cx;
+    pt.y = cy;
 
+    // matrice du rectangle
+    const rectMatrix = rect.getCTM();
+
+    // matrice du garden
+    const gardenMatrix = garden.getCTM();
+    // on neutralise la matrice du parent
+    const relativeMatrix = gardenMatrix.inverse().multiply(rectMatrix);
+    const finalPoint = pt.matrixTransform(relativeMatrix);
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", cx);
-    label.setAttribute("y", cy);
+    label.setAttribute("x", finalPoint.x);
+    label.setAttribute("y", finalPoint.y);
     label.setAttribute("text-anchor", "middle");
-    label.setAttribute("dominant-baseline", "middle");
+    label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", 14);
     label.textContent = id;
-
     garden.appendChild(label);
   });
 }
