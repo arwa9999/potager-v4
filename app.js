@@ -140,9 +140,8 @@ function updateCompanions(cultureKey) {
    ===================================================== */
 
 function ensureTitlesAndLabels() {
-  const svg = document.querySelector("svg");
   const garden = document.getElementById("garden");
-  if (!svg || !garden) return;
+  if (!garden) return;
 
   garden.querySelectorAll("text.plot-label").forEach(el => el.remove());
 
@@ -151,22 +150,16 @@ function ensureTitlesAndLabels() {
     if (!id) return;
 
     const bbox = rect.getBBox();
+
     const cx = bbox.x + bbox.width / 2;
     const cy = bbox.y + bbox.height / 2;
 
-    const pt = svg.createSVGPoint();
-    pt.x = cx;
-    pt.y = cy;
-
-    const matrix = rect.getCTM();
-    const finalPoint = pt.matrixTransform(matrix);
-
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("class", "plot-label");
-    label.setAttribute("x", finalPoint.x);
-    label.setAttribute("y", finalPoint.y);
+    label.setAttribute("x", cx);
+    label.setAttribute("y", cy);
     label.setAttribute("text-anchor", "middle");
-    label.setAttribute("dominant-baseline", "central");
+    label.setAttribute("dominant-baseline", "middle");
     label.setAttribute("font-size", 14);
     label.textContent = id;
 
