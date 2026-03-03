@@ -22,7 +22,29 @@ let families = {};
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 
+/* =====================================================
+   ===  remplir les familles
+   ===================================================== */
+function populateFamilySelect() {
+  const select = document.getElementById("family");
+  const rotSelect = document.getElementById("rot-family");
+  if (!select || !families) return;
 
+  select.innerHTML = '<option value="">--</option>';
+  if (rotSelect) rotSelect.innerHTML = '<option value="">Toutes</option>';
+
+  Object.keys(families).forEach(key => {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = families[key];
+    select.appendChild(opt);
+
+    if (rotSelect) {
+      const opt2 = opt.cloneNode(true);
+      rotSelect.appendChild(opt2);
+    }
+  });
+}
 /* =====================================================
 les cultures
    ===================================================== */
@@ -39,7 +61,28 @@ function populateCultureSelect() {
     select.appendChild(option);
   });
 }
+function populateActionSelect() {
+  const select = document.getElementById("action");
+  const filterSelect = document.getElementById("f-action");
+  if (!select) return;
 
+  const actions = ["Semis", "Plantation", "Récolte", "Arrachage", "Engrais"];
+
+  select.innerHTML = '<option value="">-- Choisir --</option>';
+  if (filterSelect) filterSelect.innerHTML = '<option value="">Toutes</option>';
+
+  actions.forEach(a => {
+    const opt = document.createElement("option");
+    opt.value = a;
+    opt.textContent = a;
+    select.appendChild(opt);
+
+    if (filterSelect) {
+      const opt2 = opt.cloneNode(true);
+      filterSelect.appendChild(opt2);
+    }
+  });
+}
 /* =====================================================
    ===  compagnonnage
    ===================================================== */
@@ -53,8 +96,10 @@ function updateCompanions(cultureKey) {
   const data = companions[cultureKey];
 
   div.innerHTML = `
-    <strong>Amies :</strong> ${(data.good || []).join(", ")}<br>
-    <strong>Ennemies :</strong> ${(data.bad || []).join(", ")}
+    <div style="margin-top:10px">
+      <strong>🌿 Amies :</strong> ${(data.good || []).join(", ")}<br>
+      <strong>⚠️ Ennemies :</strong> ${(data.bad || []).join(", ")}
+    </div>
   `;
 }
 
@@ -242,17 +287,19 @@ async function init() {
   await loadStaticData();
   await loadParcellesFromCloud();
 
+  populateActionSelect();
+  populateCultureSelect();
+  populateFamilySelect();
+
   ensureTitlesAndLabels();
   applyRecencyColors();
   setupPlotClicks();
   setupSaveButton();
 
-  // 👉 ici
   document.getElementById("culture")?.addEventListener("change", e => {
     updateCompanions(e.target.value);
   });
 
   console.log("✅ Potager initialisé proprement");
 }
-
 document.addEventListener("DOMContentLoaded", init);
