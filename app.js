@@ -206,7 +206,9 @@ async function init() {
   await loadStaticData();
   await loadParcellesFromCloud();
 
-  window.ensureTitlesAndLabels = ensureTitlesAndLabels;
+  // 👉 APPEL DIRECT
+  ensureTitlesAndLabels();
+
   applyRecencyColors();
   setupPlotClicks();
   setupSaveButton();
