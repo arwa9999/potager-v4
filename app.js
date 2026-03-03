@@ -34,9 +34,11 @@ function populateFamilySelect() {
   if (rotSelect) rotSelect.innerHTML = '<option value="">Toutes</option>';
 
   Object.keys(families).forEach(key => {
+    const label = families[key].fr || key;   // 👈 ici la correction
+
     const opt = document.createElement("option");
     opt.value = key;
-    opt.textContent = families[key];
+    opt.textContent = label;
     select.appendChild(opt);
 
     if (rotSelect) {
