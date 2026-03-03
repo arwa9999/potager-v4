@@ -10,11 +10,20 @@ import { syncSection, loadSection } from "./firebase.js";
 
 let state = { plots: [] };
 let currentId = null;
-
+let currentLang = "fr";
 let companions = {};
 let cultures = {};
 let families = {};
 
+window.i18n = {
+  header: { fr: "Plan du potager", nl: "Moestuinplan" },
+  legend_recent: { fr: "Récent", nl: "Recent" },
+  legend_mid: { fr: "Moyen", nl: "Gemiddeld" },
+  legend_old: { fr: "Ancien", nl: "Oud" },
+  panel_add: { fr: "+ Ajouter une action", nl: "+ Actie toevoegen" },
+  save: { fr: "Enregistrer", nl: "Opslaan" },
+  export: { fr: "Exporter l’historique (.json)", nl: "Geschiedenis exporteren (.json)" }
+};
 /* =====================================================
    ===  UTILITAIRES DOM
    ===================================================== */
@@ -201,6 +210,28 @@ function renderHistory(id) {
   ).join('');
 }
 
+
+/* =====================================================
+   ===  FR ⇄ NL
+   ===================================================== */
+
+function applyTranslations() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    if (window.i18n && window.i18n[key]) {
+      el.textContent = window.i18n[key][currentLang] || el.textContent;
+    }
+  });
+
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+    const key = el.dataset.i18nPh;
+    if (window.i18n && window.i18n[key]) {
+      el.placeholder = window.i18n[key][currentLang] || el.placeholder;
+    }
+  });
+}
+
+
 /* =====================================================
    ===  FIREBASE SYNC
    ===================================================== */
@@ -292,12 +323,20 @@ async function init() {
   populateActionSelect();
   populateCultureSelect();
   populateFamilySelect();
-
+  applyTranslations();
   ensureTitlesAndLabels();
   applyRecencyColors();
   setupPlotClicks();
   setupSaveButton();
-
+   
+   document.getElementById("lang-toggle")?.addEventListener("click", () => {
+     currentLang = currentLang === "fr" ? "nl" : "fr";
+     applyTranslations();
+   
+     // refresh des menus si nécessaire
+     populateCultureSelect();
+     populateFamilySelect();
+   });
   document.getElementById("culture")?.addEventListener("change", e => {
     updateCompanions(e.target.value);
   });
