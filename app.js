@@ -170,6 +170,7 @@ function ensureTitlesAndLabels() {
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
     label.setAttribute("font-size", 14);
+     label.setAttribute("pointer-events", "none"); 
     label.textContent = id;
     garden.appendChild(label);
   });
