@@ -133,8 +133,10 @@ function populateCultureSelect() {
 
   companions.forEach(item => {
     const opt = document.createElement("option");
-    opt.value = item.key; // ⚠️ clé réelle JSON
-    opt.textContent = item[currentLang];
+
+    opt.value = item.key;          // 🔥 LA CLÉ TECHNIQUE
+    opt.textContent = item[currentLang]; // 🌍 TEXTE AFFICHÉ
+
     select.appendChild(opt);
   });
 }
