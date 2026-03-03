@@ -45,18 +45,52 @@ function applyTranslations() {
 
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-
+/* =====================================================
+   === panneau latéral parcelle
+   ===================================================== */
 function setupPlotClicks() {
-  document.querySelectorAll("#garden rect.plot").forEach(plot => {
-    plot.addEventListener("click", () => {
-      const id = plot.dataset.id;
-      console.log("Parcelle cliquée :", id);
+  const garden = document.getElementById("garden");
 
-      document.getElementById("plot-title").textContent = `Parcelle ${id}`;
-      document.getElementById("info-panel").classList.remove("hidden");
-    });
+  garden.addEventListener("click", e => {
+    const rect = e.target.closest("rect.plot");
+    if (!rect) return;
+
+    currentId = rect.dataset.id;
+
+    document.getElementById("plot-title").textContent = `Parcelle ${currentId}`;
+    document.getElementById("info-panel").classList.remove("hidden");
+
+    // RESET FORMULAIRE
+    $("#date").value = "";
+    $("#action").value = "";
+    $("#culture").value = "";
+    $("#family").value = "";
+    $("#companions").innerHTML = "";
+
+    renderHistory(currentId);
   });
 }
+
+
+function renderHistory(id) {
+  const plot = state.plots.find(p => p.id == id);
+  const div = $("#history");
+  if (!div) return;
+
+  if (!plot || !plot.history?.length) {
+    div.innerHTML = "—";
+    return;
+  }
+
+  div.innerHTML = plot.history.map(h =>
+    `<div class="entry">
+       <strong>${h.date}</strong><br>
+       ${h.action} — ${h.culture}
+     </div>`
+  ).join("");
+}
+
+
 /* =====================================================
    === SELECTS DYNAMIQUES
    ===================================================== */
@@ -188,12 +222,55 @@ function ensureTitlesAndLabels() {
 }
 
 /* =====================================================
+   === Btn enregistrer
+   ===================================================== */
+function setupSaveButton() {
+   await loadParcellesFromCloud();
+  $("#save")?.addEventListener("click", async () => {
+    const date = $("#date").value || new Date().toISOString().slice(0,10);
+    const action = $("#action").value;
+    const culture = $("#culture").value;
+
+    if (!currentId || !action || !culture) {
+      alert("Données incomplètes");
+      return;
+    }
+
+    let plot = state.plots.find(p => p.id == currentId);
+    if (!plot) {
+      plot = { id: Number(currentId), history: [] };
+      state.plots.push(plot);
+    }
+
+    plot.history.unshift({ date, action, culture });
+
+    await saveParcellesToCloud();
+    renderHistory(currentId);
+
+    console.log("💾 Action enregistrée");
+  });
+}
+
+
+
+
+
+
+
+
+/* =====================================================
    === FIREBASE
    ===================================================== */
 
 async function loadParcellesFromCloud() {
   const remote = await loadSection("parcelles");
-  state = remote || { plots: [] };
+
+  if (!remote) {
+    state = { plots: [] };
+    return;
+  }
+
+  state = remote;
 }
 
 async function saveParcellesToCloud() {
@@ -222,7 +299,7 @@ async function init() {
   populateFamilySelect();
   populateActionSelect();
   applyTranslations();
-
+   setupSaveButton();
   ensureTitlesAndLabels();
    setupPlotClicks() 
   $("#culture")?.addEventListener("change", e => {
