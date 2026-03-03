@@ -22,6 +22,42 @@ let families = {};
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 
+
+/* =====================================================
+les cultures
+   ===================================================== */
+function populateCultureSelect() {
+  const select = document.getElementById("culture");
+  if (!select || !cultures) return;
+
+  select.innerHTML = '<option value="">-- Choisir --</option>';
+
+  Object.keys(cultures).forEach(key => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = cultures[key].fr || key;
+    select.appendChild(option);
+  });
+}
+
+/* =====================================================
+   ===  compagnonnage
+   ===================================================== */
+function updateCompanions(cultureKey) {
+  const div = document.getElementById("companions");
+  if (!div || !companions[cultureKey]) {
+    div.innerHTML = "";
+    return;
+  }
+
+  const data = companions[cultureKey];
+
+  div.innerHTML = `
+    <strong>Amies :</strong> ${(data.good || []).join(", ")}<br>
+    <strong>Ennemies :</strong> ${(data.bad || []).join(", ")}
+  `;
+}
+
 /* =====================================================
    ===  NUMÉROS DES PARCELLES (VERSION SIMPLE ET STABLE)
    ===================================================== */
@@ -206,12 +242,15 @@ async function init() {
   await loadStaticData();
   await loadParcellesFromCloud();
 
-  // 👉 APPEL DIRECT
   ensureTitlesAndLabels();
-
   applyRecencyColors();
   setupPlotClicks();
   setupSaveButton();
+
+  // 👉 ici
+  document.getElementById("culture")?.addEventListener("change", e => {
+    updateCompanions(e.target.value);
+  });
 
   console.log("✅ Potager initialisé proprement");
 }
