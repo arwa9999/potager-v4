@@ -81,6 +81,7 @@ function setupPlotClicks() {
     $("#companions").innerHTML = "";
 
     renderHistory(currentId);
+showCompanionsForCurrentPlot(currentId);
   });
 }
 
@@ -109,6 +110,20 @@ function renderHistory(id) {
 /* =====================================================
    === SELECTS DYNAMIQUES
    ===================================================== */
+function getCurrentCulture(plot) {
+  if (!plot || !plot.history?.length) return null;
+
+  for (let entry of plot.history) {
+    if (entry.action === "Semis" || entry.action === "Plantation") {
+      return entry.culture;
+    }
+    if (entry.action === "Arrachage") {
+      return null;
+    }
+  }
+
+  return null;
+}
 
 function populateCultureSelect() {
   const select = $("#culture");
@@ -177,6 +192,27 @@ function populateActionSelect() {
 /* =====================================================
    === COMPAGNONNAGE
    ===================================================== */
+function showCompanionsForCurrentPlot(id) {
+  const plot = state.plots.find(p => p.id == id);
+  const cultureKey = getCurrentCulture(plot);
+
+  const div = document.getElementById("companions");
+
+  if (!cultureKey || !companions[cultureKey]) {
+    div.innerHTML = "<em>Parcelle vide</em>";
+    return;
+  }
+
+  const data = companions[cultureKey];
+
+  div.innerHTML = `
+    <div style="margin-top:10px">
+      <strong>🌿 Culture en place :</strong> ${cultures[cultureKey][currentLang] || cultureKey}<br><br>
+      <strong>🌱 Bon compagnonnage :</strong> ${(data.good || []).join(", ")}<br>
+      <strong>⚠️ À éviter :</strong> ${(data.bad || []).join(", ")}
+    </div>
+  `;
+}
 
 function updateCompanions(cultureKey) {
   const div = $("#companions");
