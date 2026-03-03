@@ -193,23 +193,44 @@ function populateActionSelect() {
    === COMPAGNONNAGE
    ===================================================== */
 function showCompanionsForCurrentPlot(id) {
-  const plot = state.plots.find(p => p.id == id);
-  const cultureKey = getCurrentCulture(plot);
 
+  const plot = state.plots.find(p => p.id == id);
+  if (!plot) return;
+
+  const cultureKey = getCurrentCulture(plot);
   const div = document.getElementById("companions");
 
-  if (!cultureKey || !companions[cultureKey]) {
+  if (!cultureKey) {
     div.innerHTML = "<em>Parcelle vide</em>";
     return;
   }
 
-  const data = companions[cultureKey];
+  const cultureObj = companions.find(c => c.key === cultureKey);
+
+  if (!cultureObj) {
+    div.innerHTML = "<em>Aucune donnée compagnonnage</em>";
+    return;
+  }
+
+  const goodList = (cultureObj.good || [])
+    .map(k => {
+      const item = companions.find(c => c.key === k);
+      return item ? (item[currentLang] || k) : k;
+    })
+    .join(", ");
+
+  const badList = (cultureObj.bad || [])
+    .map(k => {
+      const item = companions.find(c => c.key === k);
+      return item ? (item[currentLang] || k) : k;
+    })
+    .join(", ");
 
   div.innerHTML = `
     <div style="margin-top:10px">
-      <strong>🌿 Culture en place :</strong> ${cultures[cultureKey][currentLang] || cultureKey}<br><br>
-      <strong>🌱 Bon compagnonnage :</strong> ${(data.good || []).join(", ")}<br>
-      <strong>⚠️ À éviter :</strong> ${(data.bad || []).join(", ")}
+      <strong>🌿 Culture en place :</strong> ${cultureObj[currentLang]}<br><br>
+      <strong>🌱 Bon compagnonnage :</strong><br>${goodList || "—"}<br><br>
+      <strong>⚠️ À éviter :</strong><br>${badList || "—"}
     </div>
   `;
 }
