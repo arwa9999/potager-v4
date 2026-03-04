@@ -1,5 +1,5 @@
 // firebase.js — Potager partagé (multi-utilisateur)
-
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { 
   getDatabase, 
@@ -21,6 +21,15 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+signInAnonymously(auth)
+  .then(() => {
+    console.log("🔐 Auth anonyme OK");
+  })
+  .catch(error => {
+    console.error("Erreur auth :", error);
+  });
 const db = getDatabase(app);
 
 /* ==========================================================
