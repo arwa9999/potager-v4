@@ -228,8 +228,21 @@
 <button id="open-stock" title="Ouvrir le stock">
   📦
 </button>
+<button id="open-stock-view" title="Voir l’état du stock">
+  📋
+</button>
+<div id="stock-view-overlay"></div>
 
+<div id="stock-view-panel" class="hidden">
+  <header id="stock-view-header">
+    <h2>📋 État du stock</h2>
+    <button id="close-stock-view" title="Fermer">×</button>
+  </header>
 
+  <div id="stock-summary" style="margin-bottom:1rem;"></div>
+  <div id="stock-view-list"></div>
+</div>
+  
 <div id="stock-overlay"></div>
 
 <div id="stock-panel" class="hidden">
