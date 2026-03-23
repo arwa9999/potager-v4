@@ -232,22 +232,53 @@
     <button id="close-stock" title="Fermer">×</button>
   </header>
 
-  <div class="stock-fields">
-    <label>Nom</label>
-    <input id="stock-name" type="text" placeholder="Ex: Tomates cerises">
-    
-    <label>Quantité</label>
-    <input id="stock-qty" type="number" value="1" min="0">
-    
-    <label>Type</label>
-    <select id="stock-type">
-      <option value="semence">Semence</option>
-      <option value="plant">Plant</option>
-      <option value="bulbe">Bulbe</option>
-    </select>
+<div class="stock-fields">
+  <label>Nom affiché</label>
+  <input id="stock-name" type="text" placeholder="Ex: Tomates cerises">
 
-    <button id="stock-add">Ajouter</button>
-  </div>
+  <label>Culture (clé)</label>
+  <input id="stock-culture" type="text" placeholder="Ex: tomato">
+
+  <label>Variété</label>
+  <input id="stock-variety" type="text" placeholder="Ex: Roma">
+
+  <label>Quantité</label>
+  <input id="stock-qty" type="number" value="1" min="0">
+
+  <label>Unité</label>
+  <select id="stock-unit">
+    <option value="pcs">pcs</option>
+    <option value="graines">graines</option>
+    <option value="plants">plants</option>
+    <option value="bulbes">bulbes</option>
+    <option value="g">g</option>
+    <option value="kg">kg</option>
+  </select>
+
+  <label>Type</label>
+  <select id="stock-type">
+    <option value="semence">Semence</option>
+    <option value="plant">Plant</option>
+    <option value="bulbe">Bulbe</option>
+  </select>
+
+  <label>Année</label>
+  <input id="stock-year" type="number" min="2000" max="2100" placeholder="Ex: 2026">
+
+  <label>Viabilité (années)</label>
+  <input id="stock-viability" type="number" min="0" placeholder="Ex: 3">
+
+  <label>Seuil bas</label>
+  <input id="stock-threshold" type="number" min="0" placeholder="Ex: 10">
+
+  <label>Source</label>
+  <input id="stock-source" type="text" placeholder="Ex: achat, récolte perso, échange">
+
+  <label>Notes</label>
+  <textarea id="stock-notes" rows="3" placeholder="Infos utiles..."></textarea>
+
+  <button id="stock-add">Ajouter</button>
+</div>
 
   <h3>Inventaire</h3>
   <div id="stock-list"></div>
