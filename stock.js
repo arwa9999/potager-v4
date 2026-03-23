@@ -1,101 +1,158 @@
-// stock.js — Gestion du stock de semences / plants / bulbes avec Firebase (v2)
+// stock.js — Gestion du stock de semences / plants / bulbes avec Firebase (v3)
 import { syncSection, loadSection } from "./firebase.js";
 
 (function () {
   document.addEventListener("DOMContentLoaded", () => {
     const $ = s => document.querySelector(s);
 
+    /* =========================================================
+       === ÉLÉMENTS DOM
+       ========================================================= */
     const panel = $("#stock-panel");
     const openBtn = $("#open-stock");
     const closeBtn = $("#close-stock");
     const overlay = $("#stock-overlay");
     const listEl = $("#stock-list");
 
-    // Champs existants
-    const nameEl = $("#stock-name");
-    const qtyEl = $("#stock-qty");
-    const typeEl = $("#stock-type");
-    const addBtn = $("#stock-add");
+    // Vue consultation
+    const openViewBtn = $("#open-stock-view");
+    const closeViewBtn = $("#close-stock-view");
+    const viewOverlay = $("#stock-view-overlay");
+    const viewPanel = $("#stock-view-panel");
+    const stockViewList = $("#stock-view-list");
+    const stockSummary = $("#stock-summary");
 
-    // Champs optionnels (si tu les ajoutes dans le HTML plus tard)
+    // Champs formulaire
+    const nameEl = $("#stock-name");
     const cultureEl = $("#stock-culture");
     const varietyEl = $("#stock-variety");
+    const qtyEl = $("#stock-qty");
     const unitEl = $("#stock-unit");
+    const typeEl = $("#stock-type");
     const yearEl = $("#stock-year");
     const viabilityEl = $("#stock-viability");
     const thresholdEl = $("#stock-threshold");
     const sourceEl = $("#stock-source");
     const notesEl = $("#stock-notes");
+    const addBtn = $("#stock-add");
 
+    // Indicateur sync
+    const dot = document.getElementById("sync-dot");
+    const label = document.getElementById("sync-label");
+
+    /* =========================================================
+       === ÉTAT
+       ========================================================= */
     let stock = [];
     let syncTimer = null;
     let isSyncing = false;
 
-    const STORAGE_KEY = "stock_v2";
+    const STORAGE_KEY = "stock_v3";
 
-    const dot = document.getElementById("sync-dot");
-    const label = document.getElementById("sync-label");
-    const openViewBtn = $('#open-stock-view');
-    const closeViewBtn = $('#close-stock-view');
-    const viewOverlay = $('#stock-view-overlay');
-    const viewPanel = $('#stock-view-panel');
-    const stockViewList = $('#stock-view-list');
-    const stockSummary = $('#stock-summary');
+    /* =========================================================
+       === HELPERS
+       ========================================================= */
+    function currentYear() {
+      return new Date().getFullYear();
+    }
 
-    function renderStockView() {
-  if (!stockViewList || !stockSummary) return;
+    function uid() {
+      return crypto.randomUUID
+        ? crypto.randomUUID()
+        : String(Date.now()) + Math.random().toString(16).slice(2);
+    }
 
-  if (!stock.length) {
-    stockSummary.innerHTML = "";
-    stockViewList.innerHTML = "<p style='color:#666;font-style:italic'>Aucun article en stock.</p>";
-    return;
-  }
+    function toNumber(value, fallback = 0) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
 
-  const total = stock.length;
-  const lowCount = stock.filter(item => getStatus(item) === "low" || getStatus(item) === "last_year_low").length;
-  const expiredCount = stock.filter(item => getStatus(item) === "expired").length;
-  const okCount = stock.filter(item => getStatus(item) === "ok" || getStatus(item) === "last_year").length;
+    function normalizeText(value) {
+      return String(value || "").trim();
+    }
 
-  stockSummary.innerHTML = `
-    <span class="stock-badge">Total : ${total}</span>
-    <span class="stock-badge">🟢 OK : ${okCount}</span>
-    <span class="stock-badge">🟡 Bas : ${lowCount}</span>
-    <span class="stock-badge">🔴 À remplacer : ${expiredCount}</span>
-  `;
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-  const sorted = [...stock].sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b), "fr"));
+    function normalizeItem(raw = {}) {
+      return {
+        id: raw.id || uid(),
+        name: normalizeText(raw.name),
+        cultureKey: normalizeText(raw.cultureKey),
+        variety: normalizeText(raw.variety),
+        qty: Math.max(0, toNumber(raw.qty, 0)),
+        unit: normalizeText(raw.unit) || "pcs",
+        type: normalizeText(raw.type) || "semence",
+        year: raw.year === "" || raw.year == null ? null : toNumber(raw.year, null),
+        viabilityYears:
+          raw.viabilityYears === "" || raw.viabilityYears == null
+            ? null
+            : Math.max(0, toNumber(raw.viabilityYears, null)),
+        lowStockThreshold:
+          raw.lowStockThreshold === "" || raw.lowStockThreshold == null
+            ? 0
+            : Math.max(0, toNumber(raw.lowStockThreshold, 0)),
+        source: normalizeText(raw.source),
+        notes: normalizeText(raw.notes),
+        createdAt: raw.createdAt || new Date().toISOString(),
+        updatedAt: raw.updatedAt || new Date().toISOString()
+      };
+    }
 
-  stockViewList.innerHTML = sorted.map(item => {
-    return `
-      <div class="entry" style="padding:8px 0;border-bottom:1px solid #eee">
-        <div><strong>${escapeHtml(getDisplayName(item))}</strong></div>
-        <div style="font-size:.85rem;color:#666">
-          ${escapeHtml(item.type || "—")}
-          ${item.variety ? ` • ${escapeHtml(item.variety)}` : ""}
-          ${item.year ? ` • année ${item.year}` : ""}
-        </div>
-        <div style="margin-top:4px">
-          ${item.qty} ${escapeHtml(item.unit || "pcs")}
-        </div>
-        <div style="font-size:.85rem;margin-top:4px">
-          ${getStatusLabel(item)}
-        </div>
-      </div>
-    `;
-  }).join("");
-}
+    function getDisplayName(item) {
+      if (item.name) return item.name;
+      if (item.cultureKey && item.variety) return `${item.cultureKey} — ${item.variety}`;
+      if (item.cultureKey) return item.cultureKey;
+      return "Article sans nom";
+    }
 
-function openStockView() {
-  renderStockView();
-  viewPanel?.classList.add("visible");
-  viewOverlay?.classList.add("active");
-}
+    function getStatus(item) {
+      const low = item.qty <= (item.lowStockThreshold || 0);
 
-function closeStockView() {
-  viewPanel?.classList.remove("visible");
-  viewOverlay?.classList.remove("active");
-}
-    
+      if (item.year && item.viabilityYears != null) {
+        const age = currentYear() - item.year;
+        if (age > item.viabilityYears) return "expired";
+        if (age === item.viabilityYears) return low ? "last_year_low" : "last_year";
+      }
+
+      if (low) return "low";
+      return "ok";
+    }
+
+    function getStatusLabel(item) {
+      const status = getStatus(item);
+
+      switch (status) {
+        case "expired":
+          return "🔴 À remplacer";
+        case "last_year":
+          return "🟠 Dernière année";
+        case "last_year_low":
+          return "🟠 Dernière année / stock bas";
+        case "low":
+          return "🟡 Stock bas";
+        default:
+          return "🟢 OK";
+      }
+    }
+
+    function sameItem(a, b) {
+      return (
+        normalizeText(a.name).toLowerCase() === normalizeText(b.name).toLowerCase() &&
+        normalizeText(a.cultureKey).toLowerCase() === normalizeText(b.cultureKey).toLowerCase() &&
+        normalizeText(a.variety).toLowerCase() === normalizeText(b.variety).toLowerCase() &&
+        normalizeText(a.type).toLowerCase() === normalizeText(b.type).toLowerCase() &&
+        normalizeText(a.unit).toLowerCase() === normalizeText(b.unit).toLowerCase() &&
+        (a.year || null) === (b.year || null)
+      );
+    }
+
     function setSyncState(state) {
       if (!dot || !label) return;
 
@@ -115,44 +172,33 @@ function closeStockView() {
       }
     }
 
-    function currentYear() {
-      return new Date().getFullYear();
+    function closeEditPanel() {
+      panel?.classList.remove("visible");
+      overlay?.classList.remove("active");
     }
 
-    function uid() {
-      return crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+    function closeViewPanel() {
+      viewPanel?.classList.remove("visible");
+      viewOverlay?.classList.remove("active");
     }
 
-    function toNumber(value, fallback = 0) {
-      const n = Number(value);
-      return Number.isFinite(n) ? n : fallback;
+    function clearForm() {
+      if (nameEl) nameEl.value = "";
+      if (cultureEl) cultureEl.value = "";
+      if (varietyEl) varietyEl.value = "";
+      if (qtyEl) qtyEl.value = 1;
+      if (unitEl) unitEl.value = "pcs";
+      if (typeEl) typeEl.value = "semence";
+      if (yearEl) yearEl.value = "";
+      if (viabilityEl) viabilityEl.value = "";
+      if (thresholdEl) thresholdEl.value = "";
+      if (sourceEl) sourceEl.value = "";
+      if (notesEl) notesEl.value = "";
     }
 
-    function normalizeText(value) {
-      return String(value || "").trim();
-    }
-
-    function normalizeItem(raw = {}) {
-      const item = {
-        id: raw.id || uid(),
-        name: normalizeText(raw.name),
-        cultureKey: normalizeText(raw.cultureKey),
-        variety: normalizeText(raw.variety),
-        qty: Math.max(0, toNumber(raw.qty, 0)),
-        unit: normalizeText(raw.unit) || "pcs",
-        type: normalizeText(raw.type) || "semence",
-        year: raw.year === "" || raw.year == null ? null : toNumber(raw.year, null),
-        viabilityYears: raw.viabilityYears === "" || raw.viabilityYears == null ? null : Math.max(0, toNumber(raw.viabilityYears, null)),
-        lowStockThreshold: raw.lowStockThreshold === "" || raw.lowStockThreshold == null ? 0 : Math.max(0, toNumber(raw.lowStockThreshold, 0)),
-        source: normalizeText(raw.source),
-        notes: normalizeText(raw.notes),
-        createdAt: raw.createdAt || new Date().toISOString(),
-        updatedAt: raw.updatedAt || new Date().toISOString()
-      };
-
-      return item;
-    }
-
+    /* =========================================================
+       === LOCAL STORAGE
+       ========================================================= */
     function loadLocal() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -169,21 +215,24 @@ function closeStockView() {
       } catch {}
     }
 
+    /* =========================================================
+       === FIREBASE
+       ========================================================= */
     async function syncFromCloud() {
       try {
         const remote = await loadSection("stock");
+
         if (Array.isArray(remote)) {
           stock = remote.map(normalizeItem);
-          saveLocal();
-          render();
-          setSyncState("ok");
         } else {
           stock = [];
-          saveLocal();
-          render();
           await syncSection("stock", []);
-          setSyncState("ok");
         }
+
+        saveLocal();
+        render();
+        renderStockView();
+        setSyncState("ok");
       } catch (e) {
         console.warn("⚠️ syncFromCloud échouée :", e);
         setSyncState("offline");
@@ -210,68 +259,9 @@ function closeStockView() {
       }, 500);
     }
 
-    function getDisplayName(item) {
-      if (item.name) return item.name;
-      if (item.cultureKey && item.variety) return `${item.cultureKey} — ${item.variety}`;
-      if (item.cultureKey) return item.cultureKey;
-      return "Article sans nom";
-    }
-
-    function getStatus(item) {
-      const low = item.qty <= (item.lowStockThreshold || 0);
-
-      if (item.year && item.viabilityYears != null) {
-        const age = currentYear() - item.year;
-        if (age > item.viabilityYears) return "expired";
-        if (age === item.viabilityYears) return low ? "last_year_low" : "last_year";
-      }
-
-      if (low) return "low";
-      return "ok";
-    }
-
-    function getStatusLabel(item) {
-      const status = getStatus(item);
-      switch (status) {
-        case "expired":
-          return "🔴 À remplacer";
-        case "last_year":
-          return "🟠 Dernière année";
-        case "last_year_low":
-          return "🟠 Dernière année / stock bas";
-        case "low":
-          return "🟡 Stock bas";
-        default:
-          return "🟢 OK";
-      }
-    }
-
-    function sameItem(a, b) {
-      return (
-        normalizeText(a.name).toLowerCase() === normalizeText(b.name).toLowerCase() &&
-        normalizeText(a.cultureKey).toLowerCase() === normalizeText(b.cultureKey).toLowerCase() &&
-        normalizeText(a.variety).toLowerCase() === normalizeText(b.variety).toLowerCase() &&
-        normalizeText(a.type).toLowerCase() === normalizeText(b.type).toLowerCase() &&
-        normalizeText(a.unit).toLowerCase() === normalizeText(b.unit).toLowerCase() &&
-        (a.year || null) === (b.year || null)
-      );
-    }
-
-    function clearForm() {
-      if (nameEl) nameEl.value = "";
-      if (qtyEl) qtyEl.value = 1;
-      if (typeEl) typeEl.value = "semence";
-
-      if (cultureEl) cultureEl.value = "";
-      if (varietyEl) varietyEl.value = "";
-      if (unitEl) unitEl.value = "pcs";
-      if (yearEl) yearEl.value = "";
-      if (viabilityEl) viabilityEl.value = "";
-      if (thresholdEl) thresholdEl.value = "";
-      if (sourceEl) sourceEl.value = "";
-      if (notesEl) notesEl.value = "";
-    }
-
+    /* =========================================================
+       === RENDER GESTION
+       ========================================================= */
     function render() {
       if (!listEl) return;
 
@@ -280,7 +270,9 @@ function closeStockView() {
         return;
       }
 
-      const sorted = [...stock].sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b), "fr"));
+      const sorted = [...stock].sort((a, b) =>
+        getDisplayName(a).localeCompare(getDisplayName(b), "fr")
+      );
 
       listEl.innerHTML = sorted.map(item => {
         const statusLabel = getStatusLabel(item);
@@ -288,13 +280,17 @@ function closeStockView() {
           item.type,
           item.variety || null,
           item.year ? `année ${item.year}` : null
-        ].filter(Boolean).join(" • ");
+        ]
+          .filter(Boolean)
+          .join(" • ");
 
         const meta = [
           `${item.qty} ${item.unit}`,
           item.lowStockThreshold ? `seuil ${item.lowStockThreshold}` : null,
           item.source || null
-        ].filter(Boolean).join(" • ");
+        ]
+          .filter(Boolean)
+          .join(" • ");
 
         return `
           <div class="entry" data-id="${item.id}" style="padding:8px 0;border-bottom:1px solid #eee">
@@ -327,18 +323,63 @@ function closeStockView() {
           </div>
         `;
       }).join("");
-      renderStockView();
     }
 
-    function escapeHtml(str) {
-      return String(str || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    /* =========================================================
+       === RENDER CONSULTATION
+       ========================================================= */
+    function renderStockView() {
+      if (!stockViewList || !stockSummary) return;
+
+      if (!stock.length) {
+        stockSummary.innerHTML = "";
+        stockViewList.innerHTML = "<p style='color:#666;font-style:italic'>Aucun article en stock.</p>";
+        return;
+      }
+
+      const total = stock.length;
+      const lowCount = stock.filter(item => {
+        const s = getStatus(item);
+        return s === "low" || s === "last_year_low";
+      }).length;
+      const expiredCount = stock.filter(item => getStatus(item) === "expired").length;
+      const okCount = stock.filter(item => {
+        const s = getStatus(item);
+        return s === "ok" || s === "last_year";
+      }).length;
+
+      stockSummary.innerHTML = `
+        <span class="stock-badge">Total : ${total}</span>
+        <span class="stock-badge">🟢 OK : ${okCount}</span>
+        <span class="stock-badge">🟡 Bas : ${lowCount}</span>
+        <span class="stock-badge">🔴 À remplacer : ${expiredCount}</span>
+      `;
+
+      const sorted = [...stock].sort((a, b) =>
+        getDisplayName(a).localeCompare(getDisplayName(b), "fr")
+      );
+
+      stockViewList.innerHTML = sorted.map(item => `
+        <div class="entry" style="padding:8px 0;border-bottom:1px solid #eee">
+          <div><strong>${escapeHtml(getDisplayName(item))}</strong></div>
+          <div style="font-size:.85rem;color:#666">
+            ${escapeHtml(item.type || "—")}
+            ${item.variety ? ` • ${escapeHtml(item.variety)}` : ""}
+            ${item.year ? ` • année ${item.year}` : ""}
+          </div>
+          <div style="margin-top:4px">
+            ${item.qty} ${escapeHtml(item.unit || "pcs")}
+          </div>
+          <div style="font-size:.85rem;margin-top:4px">
+            ${getStatusLabel(item)}
+          </div>
+        </div>
+      `).join("");
     }
 
+    /* =========================================================
+       === ACTIONS
+       ========================================================= */
     function addItemFromForm() {
       const draft = normalizeItem({
         name: nameEl?.value,
@@ -370,6 +411,7 @@ function closeStockView() {
 
       saveLocal();
       render();
+      renderStockView();
       syncToCloudDebounced();
       clearForm();
     }
@@ -383,6 +425,7 @@ function closeStockView() {
 
       saveLocal();
       render();
+      renderStockView();
       syncToCloudDebounced();
     }
 
@@ -395,6 +438,7 @@ function closeStockView() {
 
       saveLocal();
       render();
+      renderStockView();
       syncToCloudDebounced();
     }
 
@@ -407,9 +451,13 @@ function closeStockView() {
       stock.splice(idx, 1);
       saveLocal();
       render();
+      renderStockView();
       syncToCloudDebounced();
     }
 
+    /* =========================================================
+       === EVENTS
+       ========================================================= */
     addBtn?.addEventListener("click", addItemFromForm);
 
     listEl?.addEventListener("click", e => {
@@ -435,34 +483,33 @@ function closeStockView() {
     });
 
     openBtn?.addEventListener("click", () => {
-      panel?.classList.add("visible");
-      overlay?.classList.add("active");
       loadLocal();
       render();
+      panel?.classList.add("visible");
+      overlay?.classList.add("active");
       syncFromCloud();
     });
 
-    function closePanel() {
-      panel?.classList.remove("visible");
-      overlay?.classList.remove("active");
-    }
+    closeBtn?.addEventListener("click", closeEditPanel);
+    overlay?.addEventListener("click", closeEditPanel);
 
-    closeBtn?.addEventListener("click", closePanel);
-    overlay?.addEventListener("click", closePanel);
+    openViewBtn?.addEventListener("click", () => {
+      loadLocal();
+      renderStockView();
+      viewPanel?.classList.add("visible");
+      viewOverlay?.classList.add("active");
+      syncFromCloud().then(() => renderStockView());
+    });
+
+    closeViewBtn?.addEventListener("click", closeViewPanel);
+    viewOverlay?.addEventListener("click", closeViewPanel);
 
     window.addEventListener("online", () => setSyncState("ok"));
     window.addEventListener("offline", () => setSyncState("offline"));
 
-    openViewBtn?.addEventListener("click", () => {
-  loadLocal();
-  renderStockView();
-  syncFromCloud().then(() => renderStockView());
-  openStockView();
-});
-
-closeViewBtn?.addEventListener("click", closeStockView);
-viewOverlay?.addEventListener("click", closeStockView);
-    
+    /* =========================================================
+       === API PUBLIQUE
+       ========================================================= */
     window.StockAPI = {
       getAll: () => structuredClone(stock),
 
@@ -486,6 +533,7 @@ viewOverlay?.addEventListener("click", closeStockView);
 
         saveLocal();
         render();
+        renderStockView();
         syncToCloudDebounced();
       },
 
@@ -497,7 +545,10 @@ viewOverlay?.addEventListener("click", closeStockView);
         } else if (matcher?.id) {
           item = stock.find(i => i.id === matcher.id);
         } else if (matcher?.cultureKey) {
-          item = stock.find(i => i.cultureKey === matcher.cultureKey && (!matcher.variety || i.variety === matcher.variety));
+          item = stock.find(i =>
+            i.cultureKey === matcher.cultureKey &&
+            (!matcher.variety || i.variety === matcher.variety)
+          );
         }
 
         if (!item) return false;
@@ -511,6 +562,7 @@ viewOverlay?.addEventListener("click", closeStockView);
 
         saveLocal();
         render();
+        renderStockView();
         syncToCloudDebounced();
         return true;
       },
@@ -520,12 +572,16 @@ viewOverlay?.addEventListener("click", closeStockView);
       }
     };
 
+    /* =========================================================
+       === INIT
+       ========================================================= */
     (async function init() {
       loadLocal();
       render();
+      renderStockView();
       await syncFromCloud();
       setSyncState(navigator.onLine ? "ok" : "offline");
-      console.log("[stock.js] ✅ Stock v2 prêt");
+      console.log("[stock.js] ✅ Stock v3 prêt");
     })();
   });
 })();
