@@ -35,7 +35,67 @@ import { syncSection, loadSection } from "./firebase.js";
 
     const dot = document.getElementById("sync-dot");
     const label = document.getElementById("sync-label");
+    const openViewBtn = $('#open-stock-view');
+    const closeViewBtn = $('#close-stock-view');
+    const viewOverlay = $('#stock-view-overlay');
+    const viewPanel = $('#stock-view-panel');
+    const stockViewList = $('#stock-view-list');
+    const stockSummary = $('#stock-summary');
 
+    function renderStockView() {
+  if (!stockViewList || !stockSummary) return;
+
+  if (!stock.length) {
+    stockSummary.innerHTML = "";
+    stockViewList.innerHTML = "<p style='color:#666;font-style:italic'>Aucun article en stock.</p>";
+    return;
+  }
+
+  const total = stock.length;
+  const lowCount = stock.filter(item => getStatus(item) === "low" || getStatus(item) === "last_year_low").length;
+  const expiredCount = stock.filter(item => getStatus(item) === "expired").length;
+  const okCount = stock.filter(item => getStatus(item) === "ok" || getStatus(item) === "last_year").length;
+
+  stockSummary.innerHTML = `
+    <span class="stock-badge">Total : ${total}</span>
+    <span class="stock-badge">🟢 OK : ${okCount}</span>
+    <span class="stock-badge">🟡 Bas : ${lowCount}</span>
+    <span class="stock-badge">🔴 À remplacer : ${expiredCount}</span>
+  `;
+
+  const sorted = [...stock].sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b), "fr"));
+
+  stockViewList.innerHTML = sorted.map(item => {
+    return `
+      <div class="entry" style="padding:8px 0;border-bottom:1px solid #eee">
+        <div><strong>${escapeHtml(getDisplayName(item))}</strong></div>
+        <div style="font-size:.85rem;color:#666">
+          ${escapeHtml(item.type || "—")}
+          ${item.variety ? ` • ${escapeHtml(item.variety)}` : ""}
+          ${item.year ? ` • année ${item.year}` : ""}
+        </div>
+        <div style="margin-top:4px">
+          ${item.qty} ${escapeHtml(item.unit || "pcs")}
+        </div>
+        <div style="font-size:.85rem;margin-top:4px">
+          ${getStatusLabel(item)}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openStockView() {
+  renderStockView();
+  viewPanel?.classList.add("visible");
+  viewOverlay?.classList.add("active");
+}
+
+function closeStockView() {
+  viewPanel?.classList.remove("visible");
+  viewOverlay?.classList.remove("active");
+}
+    
     function setSyncState(state) {
       if (!dot || !label) return;
 
@@ -267,6 +327,7 @@ import { syncSection, loadSection } from "./firebase.js";
           </div>
         `;
       }).join("");
+      renderStockView();
     }
 
     function escapeHtml(str) {
@@ -392,6 +453,16 @@ import { syncSection, loadSection } from "./firebase.js";
     window.addEventListener("online", () => setSyncState("ok"));
     window.addEventListener("offline", () => setSyncState("offline"));
 
+    openViewBtn?.addEventListener("click", () => {
+  loadLocal();
+  renderStockView();
+  syncFromCloud().then(() => renderStockView());
+  openStockView();
+});
+
+closeViewBtn?.addEventListener("click", closeStockView);
+viewOverlay?.addEventListener("click", closeStockView);
+    
     window.StockAPI = {
       getAll: () => structuredClone(stock),
 
