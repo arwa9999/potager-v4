@@ -138,23 +138,6 @@ rect.plot:hover {
   cursor: pointer;
   color: #555;
 }
-
-/* === Champs === */
-.stock-fields label {
-  display: block;
-  margin-top: .5rem;
-  font-weight: 500;
-  color: #333;
-}
-.stock-fields input,
-.stock-fields select {
-  width: 100%;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 0.95rem;
-  margin-bottom: .4rem;
-}
 #stock-add {
   width: 100%;
   padding: 8px;
@@ -242,6 +225,23 @@ rect.plot:hover {
   font-size:1.6rem;
   cursor:pointer;
 }
+/* === Champs === */
+.stock-fields label {
+  display: block;
+  margin-top: .5rem;
+  font-weight: 500;
+  color: #333;
+}
+.stock-fields input,
+.stock-fields select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  margin-bottom: .4rem;
+}
+
 
 .stock-badge{
   display:inline-block;
