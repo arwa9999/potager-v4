@@ -311,7 +311,7 @@ import { syncSection, loadSection } from "./firebase.js";
                     data-id="${item.id}"
                     type="number"
                     min="0"
-                    step="1"
+                    step="0.01"
                     value="${item.qty}"
                     style="width:70px;padding:3px;text-align:center"
                   >
