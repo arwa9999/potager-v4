@@ -504,7 +504,7 @@ function updateStockFromAction(action, cultureKey, variety = "", qtyUsed = 1) {
   const consumesStock = action === "Semis" || action === "Plantation";
   if (!consumesStock) return true;
 
-  const qty = Math.max(1, Number(qtyUsed || 1));
+  const qty = Math.max(0.01, Number(qtyUsed || 1));
   const matches = getMatchingStockItems(cultureKey, variety, action);
 
   if (!matches.length) {
