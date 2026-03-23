@@ -136,8 +136,11 @@ function setupPlotClicks() {
     $("#family").value = "";
     $("#companions").innerHTML = "";
 
+    if ($("#used-variety")) $("#used-variety").value = "";
+    if ($("#used-qty")) $("#used-qty").value = 1;
+
     renderHistory(currentId);
-showCompanionsForCurrentPlot(currentId);
+    showCompanionsForCurrentPlot(currentId);
   });
 }
 
@@ -460,6 +463,80 @@ function updateStockFromAction(action, cultureKey) {
     console.warn(`⚠️ Impossible de décrémenter le stock pour ${cultureKey}`);
   }
 }
+function getMatchingStockItems(cultureKey, variety = "", action = "") {
+  if (!window.StockAPI?.getAll || !cultureKey) return [];
+
+  const allStock = window.StockAPI.getAll() || [];
+
+  let items = allStock.filter(item => item.cultureKey === cultureKey);
+
+  if (variety) {
+    items = items.filter(item =>
+      (item.variety || "").toLowerCase() === variety.toLowerCase()
+    );
+  }
+
+  // Priorité selon action
+  if (action === "Semis") {
+    items.sort((a, b) => {
+      if (a.type === "semence" && b.type !== "semence") return -1;
+      if (a.type !== "semence" && b.type === "semence") return 1;
+      return 0;
+    });
+  }
+
+  if (action === "Plantation") {
+    items.sort((a, b) => {
+      const rank = type =>
+        type === "plant" ? 0 :
+        type === "bulbe" ? 1 :
+        type === "semence" ? 2 : 3;
+      return rank(a.type) - rank(b.type);
+    });
+  }
+
+  return items;
+}
+
+function updateStockFromAction(action, cultureKey, variety = "", qtyUsed = 1) {
+  if (!window.StockAPI || !cultureKey) return true;
+
+  const consumesStock = action === "Semis" || action === "Plantation";
+  if (!consumesStock) return true;
+
+  const qty = Math.max(1, Number(qtyUsed || 1));
+  const matches = getMatchingStockItems(cultureKey, variety, action);
+
+  if (!matches.length) {
+    const proceed = confirm(
+      `Aucun stock trouvé pour "${cultureKey}"` +
+      (variety ? ` / variété "${variety}"` : "") +
+      `. Continuer sans mettre à jour le stock ?`
+    );
+    return proceed;
+  }
+
+  const chosen = matches.find(item => item.qty >= qty) || matches[0];
+
+  if (!chosen || chosen.qty < qty) {
+    alert(
+      `Stock insuffisant pour ${chosen?.name || cultureKey}.\n` +
+      `Disponible : ${chosen?.qty || 0}\n` +
+      `Demandé : ${qty}`
+    );
+    return false;
+  }
+
+  const success = window.StockAPI.consume({ id: chosen.id }, qty);
+
+  if (!success) {
+    alert("Impossible de mettre à jour le stock.");
+    return false;
+  }
+
+  console.log(`📦 Stock mis à jour : -${qty} sur ${chosen.name || chosen.cultureKey}`);
+  return true;
+}
 
 function setupSaveButton() {
   $("#save")?.addEventListener("click", async () => {
@@ -467,12 +544,19 @@ function setupSaveButton() {
     const action = $("#action").value;
     const culture = $("#culture").value;
     const family = $("#family")?.value || "";
+    const usedVariety = $("#used-variety")?.value?.trim() || "";
+    const usedQty = Number($("#used-qty")?.value || 1);
 
     if (!currentId || !action || !culture) {
       alert("Données incomplètes");
       return;
     }
 
+    // 1) vérifier / décrémenter le stock si nécessaire
+    const stockOk = updateStockFromAction(action, culture, usedVariety, usedQty);
+    if (!stockOk) return;
+
+    // 2) enregistrer dans l’historique parcelle
     let plot = state.plots.find(p => p.id == currentId);
 
     if (!plot) {
@@ -484,19 +568,41 @@ function setupSaveButton() {
       date,
       action,
       culture,
-      family
+      family,
+      usedVariety,
+      usedQty
     });
 
     await syncSection("parcelles", state);
 
-    // Mise à jour stock si nécessaire
-    updateStockFromAction(action, culture);
+    function renderHistory(id) {
+  const plot = state.plots.find(p => p.id == id);
+  const div = document.getElementById("history");
+  if (!div) return;
 
-    renderHistory(currentId);
-    showCompanionsForCurrentPlot(currentId);
+  if (!plot || !plot.history?.length) {
+    div.innerHTML = "—";
+    return;
+  }
 
-    console.log("💾 Action enregistrée");
-  });
+  div.innerHTML = plot.history.map(h => {
+    const cultureObj = companions.find(c => c.key === h.culture);
+    const cultureLabel = cultureObj
+      ? (cultureObj[currentLang] || cultureObj.fr || h.culture)
+      : h.culture;
+
+    const details = [];
+    if (h.usedVariety) details.push(`variété : ${h.usedVariety}`);
+    if (h.usedQty) details.push(`qté : ${h.usedQty}`);
+
+    return `
+      <div class="entry">
+        <strong>${h.date}</strong><br>
+        ${h.action} — ${cultureLabel}
+        ${details.length ? `<br><small>${details.join(" • ")}</small>` : ""}
+      </div>
+    `;
+  }).join("");
 }
 
 /* =====================================================
