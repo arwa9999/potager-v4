@@ -414,13 +414,59 @@ function ensureTitlesAndLabels() {
 /* =====================================================
    === ENREGISTREMENT
    ===================================================== */
+function updateStockFromAction(action, cultureKey) {
+  if (!window.StockAPI || !cultureKey) return;
+
+  // Actions qui consomment potentiellement du stock
+  const consumesStock = action === "Semis" || action === "Plantation";
+  if (!consumesStock) return;
+
+  const allStock = window.StockAPI.getAll?.() || [];
+
+  const matchingItems = allStock.filter(item => item.cultureKey === cultureKey);
+
+  if (!matchingItems.length) {
+    console.log(`ℹ️ Aucun stock trouvé pour la culture : ${cultureKey}`);
+    return;
+  }
+
+  // Priorité : semence pour semis, plant pour plantation
+  let chosen = null;
+
+  if (action === "Semis") {
+    chosen = matchingItems.find(item => item.type === "semence" && item.qty > 0);
+  }
+
+  if (action === "Plantation") {
+    chosen = matchingItems.find(item => item.type === "plant" && item.qty > 0)
+      || matchingItems.find(item => item.type === "bulbe" && item.qty > 0);
+  }
+
+  // Fallback : premier article avec stock > 0
+  if (!chosen) {
+    chosen = matchingItems.find(item => item.qty > 0);
+  }
+
+  if (!chosen) {
+    console.warn(`⚠️ Stock trouvé pour ${cultureKey}, mais quantité nulle`);
+    return;
+  }
+
+  const success = window.StockAPI.consume?.({ id: chosen.id }, 1);
+
+  if (success) {
+    console.log(`📦 Stock mis à jour : -1 sur ${chosen.name || chosen.cultureKey}`);
+  } else {
+    console.warn(`⚠️ Impossible de décrémenter le stock pour ${cultureKey}`);
+  }
+}
 
 function setupSaveButton() {
   $("#save")?.addEventListener("click", async () => {
-
-    const date = $("#date").value || new Date().toISOString().slice(0,10);
+    const date = $("#date").value || new Date().toISOString().slice(0, 10);
     const action = $("#action").value;
     const culture = $("#culture").value;
+    const family = $("#family")?.value || "";
 
     if (!currentId || !action || !culture) {
       alert("Données incomplètes");
@@ -434,11 +480,20 @@ function setupSaveButton() {
       state.plots.push(plot);
     }
 
-    plot.history.unshift({ date, action, culture });
+    plot.history.unshift({
+      date,
+      action,
+      culture,
+      family
+    });
 
     await syncSection("parcelles", state);
 
+    // Mise à jour stock si nécessaire
+    updateStockFromAction(action, culture);
+
     renderHistory(currentId);
+    showCompanionsForCurrentPlot(currentId);
 
     console.log("💾 Action enregistrée");
   });
