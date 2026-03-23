@@ -60,7 +60,37 @@ const $ = s => document.querySelector(s);
 /* =====================================================
    === PANNEAU LATÉRAL / CLIC PARCELLES
    ===================================================== */
+document.addEventListener("click", (e) => {
+  const panel = $("#info-panel");
+  if (!panel || panel.classList.contains("hidden")) return;
 
+  const clickedInsidePanel = panel.contains(e.target);
+  const clickedPlot = e.target.closest("#garden rect.plot");
+
+  if (!clickedInsidePanel && !clickedPlot) {
+    panel.classList.add("hidden");
+    currentId = null;
+  }
+});
+
+
+
+function setupCloseButton() {
+  $("#close")?.addEventListener("click", () => {
+    $("#info-panel")?.classList.add("hidden");
+
+    currentId = null;
+
+    if ($("#plot-title")) $("#plot-title").textContent = "";
+    if ($("#history")) $("#history").innerHTML = "";
+
+    if ($("#date")) $("#date").value = "";
+    if ($("#action")) $("#action").value = "";
+    if ($("#culture")) $("#culture").value = "";
+    if ($("#family")) $("#family").value = "";
+    if ($("#companions")) $("#companions").innerHTML = "";
+  });
+}
 function setupPlotClicks() {
   const garden = document.getElementById("garden");
 
@@ -358,7 +388,7 @@ async function init() {
   populateFamilySelect();
   populateActionSelect();
   applyTranslations();
-
+  setupCloseButton();
   ensureTitlesAndLabels();
   setupPlotClicks();
   setupSaveButton();
