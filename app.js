@@ -73,12 +73,29 @@ document.addEventListener("click", (e) => {
   }
 });
 
-
+function setupEscapeClose() {
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      $("#info-panel")?.classList.add("hidden");
+      currentId = null;
+    }
+  });
+}
 
 function setupCloseButton() {
-  $("#close")?.addEventListener("click", () => {
-    $("#info-panel")?.classList.add("hidden");
+  const btn = $("#close");
+  const panel = $("#info-panel");
 
+  if (!btn || !panel) {
+    console.warn("⚠️ Bouton close ou panneau introuvable");
+    return;
+  }
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    panel.classList.add("hidden");
     currentId = null;
 
     if ($("#plot-title")) $("#plot-title").textContent = "";
@@ -89,8 +106,11 @@ function setupCloseButton() {
     if ($("#culture")) $("#culture").value = "";
     if ($("#family")) $("#family").value = "";
     if ($("#companions")) $("#companions").innerHTML = "";
+
+    console.log("✅ Panneau fermé");
   });
 }
+
 function setupPlotClicks() {
   const garden = document.getElementById("garden");
 
@@ -277,17 +297,33 @@ function showCompanionsForCurrentPlot(id) {
 
 function updateCompanions(cultureKey) {
   const div = $("#companions");
-  if (!div || !companions[cultureKey]) {
+  if (!div) return;
+
+  const data = companions.find(c => c.key === cultureKey);
+
+  if (!data) {
     div.innerHTML = "";
     return;
   }
 
-  const data = companions[cultureKey];
+  const goodList = (data.good || [])
+    .map(k => {
+      const item = companions.find(c => c.key === k);
+      return item ? (item[currentLang] || item.fr || k) : k;
+    })
+    .join(", ");
+
+  const badList = (data.bad || [])
+    .map(k => {
+      const item = companions.find(c => c.key === k);
+      return item ? (item[currentLang] || item.fr || k) : k;
+    })
+    .join(", ");
 
   div.innerHTML = `
     <div style="margin-top:10px">
-      <strong>🌿 Amies :</strong> ${(data.good || []).join(", ")}<br>
-      <strong>⚠️ Ennemies :</strong> ${(data.bad || []).join(", ")}
+      <strong>🌿 Amies :</strong> ${goodList || "—"}<br>
+      <strong>⚠️ Ennemies :</strong> ${badList || "—"}
     </div>
   `;
 }
@@ -389,6 +425,7 @@ async function init() {
   populateActionSelect();
   applyTranslations();
   setupCloseButton();
+  setupEscapeClose();
   ensureTitlesAndLabels();
   setupPlotClicks();
   setupSaveButton();
