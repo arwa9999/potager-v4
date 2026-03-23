@@ -1,188 +1,44 @@
-// stock.js — Gestion du stock de semences avec Firebase (v11.2.0)
+// stock.js — Gestion du stock de semences / plants / bulbes avec Firebase (v2)
 import { syncSection, loadSection } from "./firebase.js";
 
 (function () {
   document.addEventListener("DOMContentLoaded", () => {
-    /* === Sélecteurs utilitaires === */
     const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
 
-    /* === Éléments DOM === */
-    const panel = $('#stock-panel');
-    const openBtn = $('#open-stock');
-    const closeBtn = $('#close-stock');
-    const overlay = $('#stock-overlay');
-    const listEl = $('#stock-list');
-    const nameEl = $('#stock-name');
-    const qtyEl = $('#stock-qty');
-    const typeEl = $('#stock-type');
-    const addBtn = $('#stock-add');
+    const panel = $("#stock-panel");
+    const openBtn = $("#open-stock");
+    const closeBtn = $("#close-stock");
+    const overlay = $("#stock-overlay");
+    const listEl = $("#stock-list");
 
-    /* === État interne === */
+    // Champs existants
+    const nameEl = $("#stock-name");
+    const qtyEl = $("#stock-qty");
+    const typeEl = $("#stock-type");
+    const addBtn = $("#stock-add");
+
+    // Champs optionnels (si tu les ajoutes dans le HTML plus tard)
+    const cultureEl = $("#stock-culture");
+    const varietyEl = $("#stock-variety");
+    const unitEl = $("#stock-unit");
+    const yearEl = $("#stock-year");
+    const viabilityEl = $("#stock-viability");
+    const thresholdEl = $("#stock-threshold");
+    const sourceEl = $("#stock-source");
+    const notesEl = $("#stock-notes");
+
     let stock = [];
     let syncTimer = null;
     let isSyncing = false;
 
-    /* =========================================================
-       ===   LOCALSTORAGE   ====================================
-       ========================================================= */
-    function loadLocal() {
-      try {
-        const raw = localStorage.getItem("stock_v1");
-        stock = raw ? JSON.parse(raw) : [];
-        if (!Array.isArray(stock)) stock = [];
-      } catch {
-        stock = [];
-      }
-    }
+    const STORAGE_KEY = "stock_v2";
 
-    function saveLocal() {
-      try {
-        localStorage.setItem("stock_v1", JSON.stringify(stock));
-      } catch {}
-    }
-
-    /* =========================================================
-       ===   FIREBASE SYNC   ===================================
-       ========================================================= */
-    async function syncFromCloud() {
-      try {
-        const remote = await loadSection("stock");
-        if (Array.isArray(remote) && remote.length) {
-          console.log("☁️ Stock importé depuis Firebase :", remote);
-          stock = remote;
-          saveLocal();
-          render();
-          setSyncState("ok");
-        } else {
-          console.log("ℹ️ Aucun stock trouvé sur Firebase (création vide)");
-          await syncSection("stock", []);
-          setSyncState("ok");
-        }
-      } catch (e) {
-        console.warn("⚠️ SyncFromCloud échouée :", e);
-        setSyncState("offline");
-      }
-    }
-
-    async function syncToCloudDebounced() {
-      if (isSyncing) return;
-      clearTimeout(syncTimer);
-      syncTimer = setTimeout(async () => {
-        try {
-          isSyncing = true;
-          setSyncState("syncing");
-          await syncSection("stock", stock);
-          console.log("☁️ Stock synchronisé → Firebase");
-          setSyncState("ok");
-        } catch (e) {
-          console.warn("⚠️ SyncToCloud échouée :", e);
-          setSyncState("offline");
-        } finally {
-          isSyncing = false;
-        }
-      }, 700);
-    }
-
-    /* =========================================================
-       ===   UI RENDERING   ====================================
-       ========================================================= */
-    function render() {
-      if (!listEl) return;
-      if (stock.length === 0) {
-        listEl.innerHTML = "<p style='color:#666;font-style:italic'>Aucun article en stock.</p>";
-        return;
-      }
-
-      const rows = stock
-        .map(
-          (item, i) => `
-        <div class="entry" style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid #eee">
-          <span><strong>${item.name}</strong><br><small>${item.type}</small></span>
-          <span style="display:flex;gap:6px;align-items:center">
-            <input type="number" min="0" value="${item.qty}" data-idx="${i}" style="width:70px;padding:3px">
-            <button class="del" data-idx="${i}" style="background:#c62828;color:#fff;border:0;border-radius:4px;padding:3px 6px;cursor:pointer">✕</button>
-          </span>
-        </div>
-      `
-        )
-        .join('');
-      listEl.innerHTML = rows;
-    }
-
-    /* =========================================================
-       ===   EVENTS   ==========================================
-       ========================================================= */
-    addBtn?.addEventListener("click", () => {
-      const name = nameEl.value.trim();
-      const qty = Number(qtyEl.value || 0);
-      const type = typeEl.value;
-      if (!name) return alert("Nom requis");
-
-      const existing = stock.find(i => i.name.toLowerCase() === name.toLowerCase() && i.type === type);
-      if (existing) existing.qty += qty;
-      else stock.push({ name, qty, type });
-
-      saveLocal();
-      render();
-      syncToCloudDebounced();
-      nameEl.value = "";
-      qtyEl.value = "";
-    });
-
-    listEl?.addEventListener("click", e => {
-      if (e.target.classList.contains("del")) {
-        const idx = +e.target.dataset.idx;
-        if (confirm("Supprimer cet article ?")) {
-          stock.splice(idx, 1);
-          saveLocal();
-          render();
-          syncToCloudDebounced();
-        }
-      }
-    });
-
-    listEl?.addEventListener("change", e => {
-      if (e.target.matches('input[type="number"]')) {
-        const idx = +e.target.dataset.idx;
-        const val = Math.max(0, Number(e.target.value || 0));
-        if (stock[idx]) {
-          stock[idx].qty = val;
-          saveLocal();
-          syncToCloudDebounced();
-        }
-      }
-    });
-
-    /* =========================================================
-       ===   PANNEAU UI   =====================================
-       ========================================================= */
-    openBtn?.addEventListener("click", () => {
-      panel.classList.add("visible");
-      overlay.classList.add("active");
-      loadLocal();
-      render();
-      syncFromCloud();
-    });
-
-    closeBtn?.addEventListener("click", () => {
-      panel.classList.remove("visible");
-      overlay.classList.remove("active");
-    });
-
-    overlay?.addEventListener("click", () => {
-      panel.classList.remove("visible");
-      overlay.classList.remove("active");
-    });
-
-    /* =========================================================
-       ===   INDICATEUR VISUEL (SYNC STATE)   ==================
-       ========================================================= */
     const dot = document.getElementById("sync-dot");
     const label = document.getElementById("sync-label");
 
     function setSyncState(state) {
       if (!dot || !label) return;
+
       switch (state) {
         case "ok":
           dot.style.background = "#2e7d32";
@@ -199,42 +55,406 @@ import { syncSection, loadSection } from "./firebase.js";
       }
     }
 
+    function currentYear() {
+      return new Date().getFullYear();
+    }
+
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+    }
+
+    function toNumber(value, fallback = 0) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function normalizeText(value) {
+      return String(value || "").trim();
+    }
+
+    function normalizeItem(raw = {}) {
+      const item = {
+        id: raw.id || uid(),
+        name: normalizeText(raw.name),
+        cultureKey: normalizeText(raw.cultureKey),
+        variety: normalizeText(raw.variety),
+        qty: Math.max(0, toNumber(raw.qty, 0)),
+        unit: normalizeText(raw.unit) || "pcs",
+        type: normalizeText(raw.type) || "semence",
+        year: raw.year === "" || raw.year == null ? null : toNumber(raw.year, null),
+        viabilityYears: raw.viabilityYears === "" || raw.viabilityYears == null ? null : Math.max(0, toNumber(raw.viabilityYears, null)),
+        lowStockThreshold: raw.lowStockThreshold === "" || raw.lowStockThreshold == null ? 0 : Math.max(0, toNumber(raw.lowStockThreshold, 0)),
+        source: normalizeText(raw.source),
+        notes: normalizeText(raw.notes),
+        createdAt: raw.createdAt || new Date().toISOString(),
+        updatedAt: raw.updatedAt || new Date().toISOString()
+      };
+
+      return item;
+    }
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        stock = Array.isArray(parsed) ? parsed.map(normalizeItem) : [];
+      } catch {
+        stock = [];
+      }
+    }
+
+    function saveLocal() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stock));
+      } catch {}
+    }
+
+    async function syncFromCloud() {
+      try {
+        const remote = await loadSection("stock");
+        if (Array.isArray(remote)) {
+          stock = remote.map(normalizeItem);
+          saveLocal();
+          render();
+          setSyncState("ok");
+        } else {
+          stock = [];
+          saveLocal();
+          render();
+          await syncSection("stock", []);
+          setSyncState("ok");
+        }
+      } catch (e) {
+        console.warn("⚠️ syncFromCloud échouée :", e);
+        setSyncState("offline");
+      }
+    }
+
+    async function syncToCloudDebounced() {
+      if (isSyncing) return;
+
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(async () => {
+        try {
+          isSyncing = true;
+          setSyncState("syncing");
+          await syncSection("stock", stock);
+          setSyncState("ok");
+          console.log("☁️ Stock synchronisé → Firebase");
+        } catch (e) {
+          console.warn("⚠️ syncToCloud échouée :", e);
+          setSyncState("offline");
+        } finally {
+          isSyncing = false;
+        }
+      }, 500);
+    }
+
+    function getDisplayName(item) {
+      if (item.name) return item.name;
+      if (item.cultureKey && item.variety) return `${item.cultureKey} — ${item.variety}`;
+      if (item.cultureKey) return item.cultureKey;
+      return "Article sans nom";
+    }
+
+    function getStatus(item) {
+      const low = item.qty <= (item.lowStockThreshold || 0);
+
+      if (item.year && item.viabilityYears != null) {
+        const age = currentYear() - item.year;
+        if (age > item.viabilityYears) return "expired";
+        if (age === item.viabilityYears) return low ? "last_year_low" : "last_year";
+      }
+
+      if (low) return "low";
+      return "ok";
+    }
+
+    function getStatusLabel(item) {
+      const status = getStatus(item);
+      switch (status) {
+        case "expired":
+          return "🔴 À remplacer";
+        case "last_year":
+          return "🟠 Dernière année";
+        case "last_year_low":
+          return "🟠 Dernière année / stock bas";
+        case "low":
+          return "🟡 Stock bas";
+        default:
+          return "🟢 OK";
+      }
+    }
+
+    function sameItem(a, b) {
+      return (
+        normalizeText(a.name).toLowerCase() === normalizeText(b.name).toLowerCase() &&
+        normalizeText(a.cultureKey).toLowerCase() === normalizeText(b.cultureKey).toLowerCase() &&
+        normalizeText(a.variety).toLowerCase() === normalizeText(b.variety).toLowerCase() &&
+        normalizeText(a.type).toLowerCase() === normalizeText(b.type).toLowerCase() &&
+        normalizeText(a.unit).toLowerCase() === normalizeText(b.unit).toLowerCase() &&
+        (a.year || null) === (b.year || null)
+      );
+    }
+
+    function clearForm() {
+      if (nameEl) nameEl.value = "";
+      if (qtyEl) qtyEl.value = 1;
+      if (typeEl) typeEl.value = "semence";
+
+      if (cultureEl) cultureEl.value = "";
+      if (varietyEl) varietyEl.value = "";
+      if (unitEl) unitEl.value = "pcs";
+      if (yearEl) yearEl.value = "";
+      if (viabilityEl) viabilityEl.value = "";
+      if (thresholdEl) thresholdEl.value = "";
+      if (sourceEl) sourceEl.value = "";
+      if (notesEl) notesEl.value = "";
+    }
+
+    function render() {
+      if (!listEl) return;
+
+      if (!stock.length) {
+        listEl.innerHTML = "<p style='color:#666;font-style:italic'>Aucun article en stock.</p>";
+        return;
+      }
+
+      const sorted = [...stock].sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b), "fr"));
+
+      listEl.innerHTML = sorted.map(item => {
+        const statusLabel = getStatusLabel(item);
+        const subtitle = [
+          item.type,
+          item.variety || null,
+          item.year ? `année ${item.year}` : null
+        ].filter(Boolean).join(" • ");
+
+        const meta = [
+          `${item.qty} ${item.unit}`,
+          item.lowStockThreshold ? `seuil ${item.lowStockThreshold}` : null,
+          item.source || null
+        ].filter(Boolean).join(" • ");
+
+        return `
+          <div class="entry" data-id="${item.id}" style="padding:8px 0;border-bottom:1px solid #eee">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+              <div style="flex:1">
+                <div><strong>${escapeHtml(getDisplayName(item))}</strong></div>
+                ${subtitle ? `<div style="font-size:.85rem;color:#666">${escapeHtml(subtitle)}</div>` : ""}
+                ${meta ? `<div style="font-size:.85rem;color:#444;margin-top:3px">${escapeHtml(meta)}</div>` : ""}
+                <div style="font-size:.85rem;margin-top:4px">${statusLabel}</div>
+                ${item.notes ? `<div style="font-size:.82rem;color:#666;margin-top:4px"><em>${escapeHtml(item.notes)}</em></div>` : ""}
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                <div style="display:flex;gap:4px">
+                  <button class="qty-minus" data-id="${item.id}" style="padding:2px 7px;border:0;border-radius:4px;background:#ddd;cursor:pointer">−</button>
+                  <input
+                    class="qty-input"
+                    data-id="${item.id}"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="${item.qty}"
+                    style="width:70px;padding:3px;text-align:center"
+                  >
+                  <button class="qty-plus" data-id="${item.id}" style="padding:2px 7px;border:0;border-radius:4px;background:#ddd;cursor:pointer">+</button>
+                </div>
+                <button class="del" data-id="${item.id}" style="background:#c62828;color:#fff;border:0;border-radius:4px;padding:4px 8px;cursor:pointer">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function addItemFromForm() {
+      const draft = normalizeItem({
+        name: nameEl?.value,
+        cultureKey: cultureEl?.value,
+        variety: varietyEl?.value,
+        qty: qtyEl?.value || 0,
+        unit: unitEl?.value || "pcs",
+        type: typeEl?.value,
+        year: yearEl?.value,
+        viabilityYears: viabilityEl?.value,
+        lowStockThreshold: thresholdEl?.value,
+        source: sourceEl?.value,
+        notes: notesEl?.value
+      });
+
+      if (!draft.name && !draft.cultureKey) {
+        alert("Nom ou culture requis");
+        return;
+      }
+
+      const existing = stock.find(item => sameItem(item, draft));
+
+      if (existing) {
+        existing.qty += draft.qty;
+        existing.updatedAt = new Date().toISOString();
+      } else {
+        stock.push(draft);
+      }
+
+      saveLocal();
+      render();
+      syncToCloudDebounced();
+      clearForm();
+    }
+
+    function updateQty(id, newQty) {
+      const item = stock.find(i => i.id === id);
+      if (!item) return;
+
+      item.qty = Math.max(0, Number(newQty || 0));
+      item.updatedAt = new Date().toISOString();
+
+      saveLocal();
+      render();
+      syncToCloudDebounced();
+    }
+
+    function changeQty(id, delta) {
+      const item = stock.find(i => i.id === id);
+      if (!item) return;
+
+      item.qty = Math.max(0, item.qty + delta);
+      item.updatedAt = new Date().toISOString();
+
+      saveLocal();
+      render();
+      syncToCloudDebounced();
+    }
+
+    function deleteItem(id) {
+      const idx = stock.findIndex(i => i.id === id);
+      if (idx < 0) return;
+
+      if (!confirm("Supprimer cet article ?")) return;
+
+      stock.splice(idx, 1);
+      saveLocal();
+      render();
+      syncToCloudDebounced();
+    }
+
+    addBtn?.addEventListener("click", addItemFromForm);
+
+    listEl?.addEventListener("click", e => {
+      const id = e.target.dataset.id;
+      if (!id) return;
+
+      if (e.target.classList.contains("del")) {
+        deleteItem(id);
+      }
+
+      if (e.target.classList.contains("qty-minus")) {
+        changeQty(id, -1);
+      }
+
+      if (e.target.classList.contains("qty-plus")) {
+        changeQty(id, 1);
+      }
+    });
+
+    listEl?.addEventListener("change", e => {
+      if (!e.target.classList.contains("qty-input")) return;
+      updateQty(e.target.dataset.id, e.target.value);
+    });
+
+    openBtn?.addEventListener("click", () => {
+      panel?.classList.add("visible");
+      overlay?.classList.add("active");
+      loadLocal();
+      render();
+      syncFromCloud();
+    });
+
+    function closePanel() {
+      panel?.classList.remove("visible");
+      overlay?.classList.remove("active");
+    }
+
+    closeBtn?.addEventListener("click", closePanel);
+    overlay?.addEventListener("click", closePanel);
+
     window.addEventListener("online", () => setSyncState("ok"));
     window.addEventListener("offline", () => setSyncState("offline"));
 
-    /* =========================================================
-       ===   API PUBLIQUE GLOBALE   ============================
-       ========================================================= */
     window.StockAPI = {
       getAll: () => structuredClone(stock),
-      add: (name, qty = 1, type = "semence") => {
-        const existing = stock.find(i => i.name.toLowerCase() === name.toLowerCase() && i.type === type);
-        if (existing) existing.qty += qty;
-        else stock.push({ name, qty, type });
+
+      add: (itemOrName, qty = 1, type = "semence") => {
+        let item;
+
+        if (typeof itemOrName === "string") {
+          item = normalizeItem({ name: itemOrName, qty, type });
+        } else {
+          item = normalizeItem(itemOrName);
+        }
+
+        const existing = stock.find(x => sameItem(x, item));
+
+        if (existing) {
+          existing.qty += item.qty;
+          existing.updatedAt = new Date().toISOString();
+        } else {
+          stock.push(item);
+        }
+
         saveLocal();
         render();
         syncToCloudDebounced();
       },
-      remove: (name, qty = 1) => {
-        const idx = stock.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
-        if (idx >= 0) {
-          stock[idx].qty = Math.max(0, stock[idx].qty - qty);
-          if (stock[idx].qty === 0) stock.splice(idx, 1);
-          saveLocal();
-          render();
-          syncToCloudDebounced();
+
+      remove: (matcher, qty = 1) => {
+        let item = null;
+
+        if (typeof matcher === "string") {
+          item = stock.find(i => i.name.toLowerCase() === matcher.toLowerCase());
+        } else if (matcher?.id) {
+          item = stock.find(i => i.id === matcher.id);
+        } else if (matcher?.cultureKey) {
+          item = stock.find(i => i.cultureKey === matcher.cultureKey && (!matcher.variety || i.variety === matcher.variety));
         }
+
+        if (!item) return false;
+
+        item.qty = Math.max(0, item.qty - qty);
+        item.updatedAt = new Date().toISOString();
+
+        if (item.qty === 0) {
+          stock = stock.filter(i => i.id !== item.id);
+        }
+
+        saveLocal();
+        render();
+        syncToCloudDebounced();
+        return true;
+      },
+
+      consume: (matcher, qty = 1) => {
+        return window.StockAPI.remove(matcher, qty);
       }
     };
 
-    /* =========================================================
-       ===   INIT AUTOMATIQUE   ================================
-       ========================================================= */
     (async function init() {
       loadLocal();
+      render();
       await syncFromCloud();
       setSyncState(navigator.onLine ? "ok" : "offline");
-      console.log("[stock.js] ✅ Connecté à Firebase (section stock) + localStorage 💾");
+      console.log("[stock.js] ✅ Stock v2 prêt");
     })();
   });
 })();
