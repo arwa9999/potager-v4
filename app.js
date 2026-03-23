@@ -174,21 +174,31 @@ function renderHistory(id) {
 /* =====================================================
    === SELECTS DYNAMIQUES
    ===================================================== */
-function getCurrentCulture(plot) {
-  if (!plot || !plot.history?.length) return null;
+function getCurrentCultures(plot) {
+  if (!plot || !plot.history?.length) return [];
 
-  for (let entry of plot.history) {
-    if (entry.action === "Semis" || entry.action === "Plantation") {
-      return entry.culture;
+  const active = new Set();
+
+  // On lit de la plus ancienne à la plus récente
+  const orderedHistory = [...plot.history].reverse();
+
+  for (const entry of orderedHistory) {
+    const action = entry.action;
+    const culture = entry.culture;
+
+    if (!culture) continue;
+
+    if (action === "Semis" || action === "Plantation") {
+      active.add(culture);
     }
-    if (entry.action === "Arrachage") {
-      return null;
+
+    if (action === "Arrachage") {
+      active.delete(culture);
     }
   }
 
-  return null;
+  return [...active];
 }
-
 function populateCultureSelect() {
   const select = document.getElementById("culture");
   if (!select) return;
@@ -259,43 +269,68 @@ function populateActionSelect() {
    === COMPAGNONNAGE
    ===================================================== */
 function showCompanionsForCurrentPlot(id) {
-
   const plot = state.plots.find(p => p.id == id);
-  if (!plot) return;
-
-  const cultureKey = getCurrentCulture(plot);
   const div = document.getElementById("companions");
 
-  if (!cultureKey) {
+  if (!div) return;
+
+  if (!plot) {
+    div.innerHTML = "<em>Parcelle introuvable</em>";
+    return;
+  }
+
+  const cultureKeys = getCurrentCultures(plot);
+
+  if (!cultureKeys.length) {
     div.innerHTML = "<em>Parcelle vide</em>";
     return;
   }
 
-  const cultureObj = companions.find(c => c.key === cultureKey);
+  const cultureObjects = cultureKeys
+    .map(key => companions.find(c => c.key === key))
+    .filter(Boolean);
 
-  if (!cultureObj) {
+  if (!cultureObjects.length) {
     div.innerHTML = "<em>Aucune donnée compagnonnage</em>";
     return;
   }
 
-  const goodList = (cultureObj.good || [])
+  const cultureNames = cultureObjects.map(c => c[currentLang] || c.fr || c.key);
+
+  const allGood = new Set();
+  const allBad = new Set();
+
+  cultureObjects.forEach(cultureObj => {
+    (cultureObj.good || []).forEach(k => allGood.add(k));
+    (cultureObj.bad || []).forEach(k => allBad.add(k));
+  });
+
+  // On retire les cultures déjà présentes de la suggestion
+  cultureKeys.forEach(k => {
+    allGood.delete(k);
+    allBad.delete(k);
+  });
+
+  const goodList = [...allGood]
     .map(k => {
       const item = companions.find(c => c.key === k);
-      return item ? (item[currentLang] || k) : k;
+      return item ? (item[currentLang] || item.fr || k) : k;
     })
+    .sort()
     .join(", ");
 
-  const badList = (cultureObj.bad || [])
+  const badList = [...allBad]
     .map(k => {
       const item = companions.find(c => c.key === k);
-      return item ? (item[currentLang] || k) : k;
+      return item ? (item[currentLang] || item.fr || k) : k;
     })
+    .sort()
     .join(", ");
 
   div.innerHTML = `
     <div style="margin-top:10px">
-      <strong>🌿 Culture en place :</strong> ${cultureObj[currentLang]}<br><br>
-      <strong>🌱 Bon compagnonnage :</strong><br>${goodList || "—"}<br><br>
+      <strong>🌿 Cultures en place :</strong><br>${cultureNames.join(", ")}<br><br>
+      <strong>🌱 Bon compagnonnage possible :</strong><br>${goodList || "—"}<br><br>
       <strong>⚠️ À éviter :</strong><br>${badList || "—"}
     </div>
   `;
