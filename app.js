@@ -2,8 +2,9 @@
    🌱 POTAGER — VERSION STABLE COLLABORATIVE
    ===================================================== */
 
-import { listenSection, syncSection } from "./firebase.js";
-
+/* import { listenSection, syncSection } from "./firebase.js";
+*/
+import { listenSection, syncSection, loadSection } from "./firebase.js";
 /* =====================================================
    === VARIABLES GLOBALES
    ===================================================== */
@@ -23,8 +24,9 @@ let families = {};
 listenSection("parcelles", data => {
   state = data || { plots: [] };
 
-  if (currentId) {
+  if (currentId != null) {
     renderHistory(currentId);
+    showCompanionsForCurrentPlot(currentId);
   }
 });
 
@@ -54,6 +56,10 @@ function applyTranslations() {
 /* =====================================================
    === UTILITAIRES
    ===================================================== */
+async function loadInitialState() {
+  const data = await loadSection("parcelles");
+  state = data || { plots: [] };
+}
 
 const $ = s => document.querySelector(s);
 
@@ -419,7 +425,7 @@ async function loadStaticData() {
 
 async function init() {
   await loadStaticData();
-
+  await loadInitialState();
   populateCultureSelect();
   populateFamilySelect();
   populateActionSelect();
