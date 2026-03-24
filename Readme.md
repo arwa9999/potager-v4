@@ -194,7 +194,7 @@ Le stock repose sur une structure de type :
 ```
 ---
 
-🌱 Philosophie du projet
+## 🌱 Philosophie du projet
 
 Le projet repose sur plusieurs principes :
 
@@ -207,7 +207,10 @@ des cultures
 du compagnonnage
 de la rotation
 du suivi saisonnier
-👥 Usages visés
+
+---
+
+## 👥 Usages visés
 
 L’application peut être utilisée pour :
 
