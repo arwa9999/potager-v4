@@ -380,6 +380,27 @@ import { syncSection, loadSection } from "./firebase.js";
     /* =========================================================
        === ACTIONS
        ========================================================= */
+async function populateStockCultureSelect() {
+  const select = $("#stock-culture");
+  if (!select) return;
+
+  try {
+    const companions = await fetch("./companions_bilingual.json").then(r => r.json());
+
+    select.innerHTML = '<option value="">--</option>';
+
+    companions.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.key;                         // ✅ clé technique
+      opt.textContent = item.fr || item.key;       // ✅ texte visible
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("❌ Impossible de remplir la liste des cultures du stock :", err);
+  }
+}
+
+    
     function addItemFromForm() {
       const draft = normalizeItem({
         name: nameEl?.value,
@@ -396,9 +417,9 @@ import { syncSection, loadSection } from "./firebase.js";
       });
 
       if (!draft.name && !draft.cultureKey) {
-        alert("Nom ou culture requis");
-        return;
-      }
+  alert("Nom ou culture requis");
+  return;
+}
 
       const existing = stock.find(item => sameItem(item, draft));
 
@@ -576,12 +597,13 @@ import { syncSection, loadSection } from "./firebase.js";
        === INIT
        ========================================================= */
     (async function init() {
-      loadLocal();
-      render();
-      renderStockView();
-      await syncFromCloud();
-      setSyncState(navigator.onLine ? "ok" : "offline");
-      console.log("[stock.js] ✅ Stock v3 prêt");
-    })();
+  await populateStockCultureSelect();
+  loadLocal();
+  render();
+  renderStockView();
+  await syncFromCloud();
+  setSyncState(navigator.onLine ? "ok" : "offline");
+  console.log("[stock.js] ✅ Stock v3 prêt");
+})();
   });
 })();
