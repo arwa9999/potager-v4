@@ -27,6 +27,8 @@ listenSection("parcelles", data => {
     renderHistory(currentId);
     showCompanionsForCurrentPlot(currentId);
   }
+
+  applyTopFilters();
 });
 
 /* =====================================================
@@ -296,7 +298,105 @@ function populateActionSelect() {
     }
   });
 }
+function populateFilterCultureSelect() {
+  const select = $("#f-culture");
+  if (!select) return;
 
+  select.innerHTML = '<option value="">--</option>';
+
+  companions.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.key;
+    opt.textContent = item[currentLang] || item.fr || item.key;
+    select.appendChild(opt);
+  });
+}
+
+function clearPlotHighlights() {
+  document.querySelectorAll("#garden rect.plot").forEach(rect => {
+    rect.classList.remove(
+      "plot-dim",
+      "plot-match",
+      "plot-semence",
+      "plot-plantation",
+      "plot-recolte",
+      "plot-arrachage"
+    );
+  });
+
+  document.querySelectorAll("#garden text.plot-label").forEach(label => {
+    label.classList.remove("plot-label-dim");
+  });
+}
+
+function getActionClass(action) {
+  switch (action) {
+    case "Semis":
+      return "plot-semence";
+    case "Plantation":
+      return "plot-plantation";
+    case "Récolte":
+      return "plot-recolte";
+    case "Arrachage":
+      return "plot-arrachage";
+    default:
+      return "";
+  }
+}
+
+function applyTopFilters() {
+  const action = $("#f-action")?.value || "";
+  const culture = $("#f-culture")?.value || "";
+  const from = $("#f-from")?.value || "";
+  const to = $("#f-to")?.value || "";
+
+  const hasFilter = !!(action || culture || from || to);
+
+  clearPlotHighlights();
+
+  if (!hasFilter) return;
+
+  const matchedIds = new Set();
+
+  state.plots.forEach(plot => {
+    const history = plot.history || [];
+
+    const hasMatch = history.some(entry => {
+      const actionOk = !action || entry.action === action;
+      const cultureOk = !culture || entry.culture === culture;
+      const fromOk = !from || entry.date >= from;
+      const toOk = !to || entry.date <= to;
+
+      return actionOk && cultureOk && fromOk && toOk;
+    });
+
+    if (hasMatch) {
+      matchedIds.add(String(plot.id));
+    }
+  });
+
+  document.querySelectorAll("#garden rect.plot").forEach(rect => {
+    const id = rect.dataset.id;
+
+    if (matchedIds.has(id)) {
+      rect.classList.add("plot-match");
+
+      if (action) {
+        const actionClass = getActionClass(action);
+        if (actionClass) rect.classList.add(actionClass);
+      }
+    } else {
+      rect.classList.add("plot-dim");
+    }
+  });
+
+  document.querySelectorAll("#garden text.plot-label").forEach(label => {
+    const id = label.textContent?.trim();
+    if (!matchedIds.has(id)) {
+      label.classList.add("plot-label-dim");
+    }
+  });
+}
 /* =====================================================
    === COMPAGNONNAGE
    ===================================================== */
@@ -599,6 +699,7 @@ async function init() {
 
   try {
     populateCultureSelect();
+     populateFilterCultureSelect();
     populateFamilySelect();
     populateActionSelect();
     applyTranslations();
@@ -607,24 +708,41 @@ async function init() {
     ensureTitlesAndLabels();
     setupPlotClicks();
     setupSaveButton();
+$("#f-action")?.addEventListener("change", applyTopFilters);
+$("#f-culture")?.addEventListener("change", applyTopFilters);
+$("#f-from")?.addEventListener("change", applyTopFilters);
+$("#f-to")?.addEventListener("change", applyTopFilters);
 
+$("#f-clear")?.addEventListener("click", () => {
+  if ($("#f-action")) $("#f-action").value = "";
+  if ($("#f-culture")) $("#f-culture").value = "";
+  if ($("#f-from")) $("#f-from").value = "";
+  if ($("#f-to")) $("#f-to").value = "";
+  if ($("#rot-family")) $("#rot-family").value = "";
+  if ($("#rot-years")) $("#rot-years").value = 3;
+
+  clearPlotHighlights();
+});
     $("#culture")?.addEventListener("change", e => {
       updateCompanions(e.target.value);
     });
 
     $("#lang-toggle")?.addEventListener("click", () => {
-      currentLang = currentLang === "fr" ? "nl" : "fr";
+  currentLang = currentLang === "fr" ? "nl" : "fr";
 
-      populateCultureSelect();
-      populateFamilySelect();
-      populateActionSelect();
-      applyTranslations();
+  populateCultureSelect();
+  populateFilterCultureSelect();
+  populateFamilySelect();
+  populateActionSelect();
+  applyTranslations();
 
-      if (currentId != null) {
-        renderHistory(currentId);
-        showCompanionsForCurrentPlot(currentId);
-      }
-    });
+  if (currentId != null) {
+    renderHistory(currentId);
+    showCompanionsForCurrentPlot(currentId);
+  }
+
+  applyTopFilters();
+});
 
     console.log("✅ Application stabilisée (mode collaboratif)");
   } catch (err) {
