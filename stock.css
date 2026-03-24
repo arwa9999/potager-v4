@@ -354,3 +354,27 @@ rect.plot:hover {
 .stock-btn.secondary {
   bottom: 90px;
 }
+
+.stock-btn::after {
+  content: attr(title);
+  position: absolute;
+  right: 65px;
+  background: #333;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transform: translateX(5px);
+  transition: .2s;
+  pointer-events: none;
+}
+
+.stock-btn:hover::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+
+
+
