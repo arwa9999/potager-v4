@@ -57,8 +57,13 @@ function applyTranslations() {
    === UTILITAIRES
    ===================================================== */
 async function loadInitialState() {
-  const data = await loadSection("parcelles");
-  state = data || { plots: [] };
+  try {
+    const data = await loadSection("parcelles");
+    state = data || { plots: [] };
+  } catch (err) {
+    console.error("❌ Impossible de charger l’état initial :", err);
+    state = { plots: [] };
+  }
 }
 
 const $ = s => document.querySelector(s);
