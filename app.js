@@ -3,7 +3,7 @@
    ===================================================== */
 
 import { listenSection, syncSection, loadSection } from "./firebase.js";
-harvestWindows = await fetch("./harvest_windows.json").then(r => r.json());
+
 /* =====================================================
    === VARIABLES GLOBALES
    ===================================================== */
