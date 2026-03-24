@@ -174,6 +174,8 @@ Chaque parcelle est stockée sous forme structurée :
 ### Stock
 
 Le stock repose sur une structure de type :
+
+```json
 {
   "id": "uuid",
   "name": "Fenouil bronze",
@@ -189,6 +191,7 @@ Le stock repose sur une structure de type :
   "notes": ""
 }
 
+```
 ---
 
 🌱 Philosophie du projet
