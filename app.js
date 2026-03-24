@@ -55,7 +55,16 @@ window.i18n = {
   legend_plot: { fr: "Parcelle", nl: "Perceel" },
   legend_compost: { fr: "Compost", nl: "Compost" },
   legend_water: { fr: "Eau", nl: "Water" },
-  legend_pergola: { fr: "Pergola", nl: "Pergola" }
+  legend_pergola: { fr: "Pergola", nl: "Pergola" },
+  f_task: { fr: "État / tâche", nl: "Status / taak" }
+};
+
+const taskLabels = {
+  all: { fr: "--", nl: "--" },
+  to_harvest: { fr: "À récolter", nl: "Te oogsten" },
+  to_clear: { fr: "À arracher", nl: "Te ruimen" },
+  in_place: { fr: "En place", nl: "Aanwezig" },
+  empty: { fr: "Vides", nl: "Leeg" }
 };
 
 function applyTranslations() {
@@ -146,8 +155,6 @@ function setupCloseButton() {
     if ($("#history")) $("#history").innerHTML = "";
 
     resetPlotForm();
-
-    console.log("✅ Panneau fermé");
   });
 }
 
@@ -235,6 +242,61 @@ function getCurrentCultures(plot) {
   return [...active];
 }
 
+function analyzePlotState(plot) {
+  if (!plot || !plot.history?.length) {
+    return {
+      activeCultures: [],
+      growingCultures: [],
+      harvestedCultures: [],
+      isEmpty: true
+    };
+  }
+
+  const map = new Map();
+  const orderedHistory = [...plot.history].reverse();
+
+  for (const entry of orderedHistory) {
+    const action = entry.action;
+    const culture = entry.culture;
+    if (!culture) continue;
+
+    if (action === "Semis" || action === "Plantation") {
+      map.set(culture, { active: true, harvested: false });
+    }
+
+    if (action === "Récolte") {
+      const current = map.get(culture) || { active: true, harvested: false };
+      current.active = true;
+      current.harvested = true;
+      map.set(culture, current);
+    }
+
+    if (action === "Arrachage") {
+      map.delete(culture);
+    }
+  }
+
+  const activeCultures = [];
+  const growingCultures = [];
+  const harvestedCultures = [];
+
+  map.forEach((value, key) => {
+    if (!value.active) return;
+
+    activeCultures.push(key);
+
+    if (value.harvested) harvestedCultures.push(key);
+    else growingCultures.push(key);
+  });
+
+  return {
+    activeCultures,
+    growingCultures,
+    harvestedCultures,
+    isEmpty: activeCultures.length === 0
+  };
+}
+
 function populateCultureSelect() {
   const select = $("#culture");
   if (!select) return;
@@ -245,6 +307,34 @@ function populateCultureSelect() {
     const opt = document.createElement("option");
     opt.value = item.key;
     opt.textContent = item[currentLang] || item.fr || item.key;
+    select.appendChild(opt);
+  });
+}
+
+function populateFilterCultureSelect() {
+  const select = $("#f-culture");
+  if (!select) return;
+
+  select.innerHTML = '<option value="">--</option>';
+
+  companions.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.key;
+    opt.textContent = item[currentLang] || item.fr || item.key;
+    select.appendChild(opt);
+  });
+}
+
+function populateTaskFilterSelect() {
+  const select = $("#f-task");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  Object.keys(taskLabels).forEach(key => {
+    const opt = document.createElement("option");
+    opt.value = key === "all" ? "" : key;
+    opt.textContent = taskLabels[key][currentLang];
     select.appendChild(opt);
   });
 }
@@ -298,105 +388,7 @@ function populateActionSelect() {
     }
   });
 }
-function populateFilterCultureSelect() {
-  const select = $("#f-culture");
-  if (!select) return;
 
-  select.innerHTML = '<option value="">--</option>';
-
-  companions.forEach(item => {
-    const opt = document.createElement("option");
-    opt.value = item.key;
-    opt.textContent = item[currentLang] || item.fr || item.key;
-    select.appendChild(opt);
-  });
-}
-
-function clearPlotHighlights() {
-  document.querySelectorAll("#garden rect.plot").forEach(rect => {
-    rect.classList.remove(
-      "plot-dim",
-      "plot-match",
-      "plot-semence",
-      "plot-plantation",
-      "plot-recolte",
-      "plot-arrachage"
-    );
-  });
-
-  document.querySelectorAll("#garden text.plot-label").forEach(label => {
-    label.classList.remove("plot-label-dim");
-  });
-}
-
-function getActionClass(action) {
-  switch (action) {
-    case "Semis":
-      return "plot-semence";
-    case "Plantation":
-      return "plot-plantation";
-    case "Récolte":
-      return "plot-recolte";
-    case "Arrachage":
-      return "plot-arrachage";
-    default:
-      return "";
-  }
-}
-
-function applyTopFilters() {
-  const action = $("#f-action")?.value || "";
-  const culture = $("#f-culture")?.value || "";
-  const from = $("#f-from")?.value || "";
-  const to = $("#f-to")?.value || "";
-
-  const hasFilter = !!(action || culture || from || to);
-
-  clearPlotHighlights();
-
-  if (!hasFilter) return;
-
-  const matchedIds = new Set();
-
-  state.plots.forEach(plot => {
-    const history = plot.history || [];
-
-    const hasMatch = history.some(entry => {
-      const actionOk = !action || entry.action === action;
-      const cultureOk = !culture || entry.culture === culture;
-      const fromOk = !from || entry.date >= from;
-      const toOk = !to || entry.date <= to;
-
-      return actionOk && cultureOk && fromOk && toOk;
-    });
-
-    if (hasMatch) {
-      matchedIds.add(String(plot.id));
-    }
-  });
-
-  document.querySelectorAll("#garden rect.plot").forEach(rect => {
-    const id = rect.dataset.id;
-
-    if (matchedIds.has(id)) {
-      rect.classList.add("plot-match");
-
-      if (action) {
-        const actionClass = getActionClass(action);
-        if (actionClass) rect.classList.add(actionClass);
-      }
-    } else {
-      rect.classList.add("plot-dim");
-    }
-  });
-
-  document.querySelectorAll("#garden text.plot-label").forEach(label => {
-    const id = label.textContent?.trim();
-    if (!matchedIds.has(id)) {
-      label.classList.add("plot-label-dim");
-    }
-  });
-}
 /* =====================================================
    === COMPAGNONNAGE
    ===================================================== */
@@ -544,6 +536,146 @@ function ensureTitlesAndLabels() {
 }
 
 /* =====================================================
+   === FILTRES VISUELS DU BANDEAU
+   ===================================================== */
+
+function clearPlotHighlights() {
+  document.querySelectorAll("#garden rect.plot").forEach(rect => {
+    rect.classList.remove(
+      "plot-dim",
+      "plot-match",
+      "plot-semence",
+      "plot-plantation",
+      "plot-recolte",
+      "plot-arrachage",
+      "plot-task-harvest",
+      "plot-task-clear",
+      "plot-task-inplace",
+      "plot-task-empty"
+    );
+  });
+
+  document.querySelectorAll("#garden text.plot-label").forEach(label => {
+    label.classList.remove("plot-label-dim");
+  });
+}
+
+function getActionClass(action) {
+  switch (action) {
+    case "Semis":
+      return "plot-semence";
+    case "Plantation":
+      return "plot-plantation";
+    case "Récolte":
+      return "plot-recolte";
+    case "Arrachage":
+      return "plot-arrachage";
+    default:
+      return "";
+  }
+}
+
+function getTaskClass(task) {
+  switch (task) {
+    case "to_harvest":
+      return "plot-task-harvest";
+    case "to_clear":
+      return "plot-task-clear";
+    case "in_place":
+      return "plot-task-inplace";
+    case "empty":
+      return "plot-task-empty";
+    default:
+      return "";
+  }
+}
+
+function plotMatchesTask(plot, task) {
+  const analysis = analyzePlotState(plot);
+
+  switch (task) {
+    case "to_harvest":
+      return analysis.growingCultures.length > 0;
+    case "to_clear":
+      return analysis.harvestedCultures.length > 0;
+    case "in_place":
+      return analysis.activeCultures.length > 0;
+    case "empty":
+      return analysis.isEmpty;
+    default:
+      return true;
+  }
+}
+
+function applyTopFilters() {
+  const action = $("#f-action")?.value || "";
+  const culture = $("#f-culture")?.value || "";
+  const from = $("#f-from")?.value || "";
+  const to = $("#f-to")?.value || "";
+  const task = $("#f-task")?.value || "";
+
+  const hasFilter = !!(action || culture || from || to || task);
+
+  clearPlotHighlights();
+
+  if (!hasFilter) return;
+
+  const matchedIds = new Set();
+
+  state.plots.forEach(plot => {
+    const history = plot.history || [];
+
+    const historyMatch = history.some(entry => {
+      const actionOk = !action || entry.action === action;
+      const cultureOk = !culture || entry.culture === culture;
+      const fromOk = !from || entry.date >= from;
+      const toOk = !to || entry.date <= to;
+
+      return actionOk && cultureOk && fromOk && toOk;
+    });
+
+    const taskMatch = !task || plotMatchesTask(plot, task);
+
+    let finalMatch = false;
+
+    if (action || culture || from || to) {
+      finalMatch = historyMatch && taskMatch;
+    } else {
+      finalMatch = taskMatch;
+    }
+
+    if (finalMatch) {
+      matchedIds.add(String(plot.id));
+    }
+  });
+
+  document.querySelectorAll("#garden rect.plot").forEach(rect => {
+    const id = rect.dataset.id;
+
+    if (matchedIds.has(id)) {
+      rect.classList.add("plot-match");
+
+      if (action) {
+        const actionClass = getActionClass(action);
+        if (actionClass) rect.classList.add(actionClass);
+      } else if (task) {
+        const taskClass = getTaskClass(task);
+        if (taskClass) rect.classList.add(taskClass);
+      }
+    } else {
+      rect.classList.add("plot-dim");
+    }
+  });
+
+  document.querySelectorAll("#garden text.plot-label").forEach(label => {
+    const id = label.textContent?.trim();
+    if (!matchedIds.has(id)) {
+      label.classList.add("plot-label-dim");
+    }
+  });
+}
+
+/* =====================================================
    === STOCK
    ===================================================== */
 
@@ -551,12 +683,27 @@ function getMatchingStockItems(cultureKey, variety = "", action = "") {
   if (!window.StockAPI?.getAll || !cultureKey) return [];
 
   const allStock = window.StockAPI.getAll() || [];
-  let items = allStock.filter(item => item.cultureKey === cultureKey);
+
+  let items = allStock.filter(item =>
+    (item.cultureKey || "").toLowerCase().trim() === cultureKey.toLowerCase().trim()
+  );
 
   if (variety) {
-    items = items.filter(item =>
-      (item.variety || "").toLowerCase() === variety.toLowerCase()
+    const v = variety.toLowerCase().trim();
+
+    let exact = items.filter(item =>
+      (item.variety || "").toLowerCase().trim() === v
     );
+
+    if (!exact.length) {
+      exact = items.filter(item =>
+        (item.variety || "").toLowerCase().includes(v)
+      );
+    }
+
+    if (exact.length) {
+      items = exact;
+    }
   }
 
   if (action === "Semis") {
@@ -587,13 +734,31 @@ function updateStockFromAction(action, cultureKey, variety = "", qtyUsed = 1) {
   if (!consumesStock) return true;
 
   const qty = Math.max(0.01, Number(qtyUsed || 1));
+  const allStock = window.StockAPI.getAll?.() || [];
+
+  const cultureMatches = allStock.filter(item =>
+    (item.cultureKey || "").toLowerCase().trim() === cultureKey.toLowerCase().trim()
+  );
+
   const matches = getMatchingStockItems(cultureKey, variety, action);
 
-  if (!matches.length) {
+  if (!cultureMatches.length) {
     const proceed = confirm(
-      `Aucun stock trouvé pour "${cultureKey}"` +
-      (variety ? ` / variété "${variety}"` : "") +
-      `. Continuer sans mettre à jour le stock ?`
+      `Aucun stock trouvé pour la culture "${cultureKey}". Continuer sans mettre à jour le stock ?`
+    );
+    return proceed;
+  }
+
+  if (!matches.length) {
+    const availableVarieties = cultureMatches
+      .map(item => item.variety)
+      .filter(Boolean)
+      .join(", ");
+
+    const proceed = confirm(
+      `Stock trouvé pour "${cultureKey}", mais pas pour la variété "${variety}".\n` +
+      `Variétés disponibles : ${availableVarieties || "non précisées"}\n\n` +
+      `Continuer sans mettre à jour le stock ?`
     );
     return proceed;
   }
@@ -661,11 +826,10 @@ function setupSaveButton() {
 
     renderHistory(currentId);
     showCompanionsForCurrentPlot(currentId);
+    applyTopFilters();
 
     if ($("#used-variety")) $("#used-variety").value = "";
     if ($("#used-qty")) $("#used-qty").value = 1;
-
-    console.log("💾 Action enregistrée + stock mis à jour");
   });
 }
 
@@ -699,7 +863,8 @@ async function init() {
 
   try {
     populateCultureSelect();
-     populateFilterCultureSelect();
+    populateFilterCultureSelect();
+    populateTaskFilterSelect();
     populateFamilySelect();
     populateActionSelect();
     applyTranslations();
@@ -708,41 +873,46 @@ async function init() {
     ensureTitlesAndLabels();
     setupPlotClicks();
     setupSaveButton();
-$("#f-action")?.addEventListener("change", applyTopFilters);
-$("#f-culture")?.addEventListener("change", applyTopFilters);
-$("#f-from")?.addEventListener("change", applyTopFilters);
-$("#f-to")?.addEventListener("change", applyTopFilters);
 
-$("#f-clear")?.addEventListener("click", () => {
-  if ($("#f-action")) $("#f-action").value = "";
-  if ($("#f-culture")) $("#f-culture").value = "";
-  if ($("#f-from")) $("#f-from").value = "";
-  if ($("#f-to")) $("#f-to").value = "";
-  if ($("#rot-family")) $("#rot-family").value = "";
-  if ($("#rot-years")) $("#rot-years").value = 3;
-
-  clearPlotHighlights();
-});
     $("#culture")?.addEventListener("change", e => {
       updateCompanions(e.target.value);
     });
 
+    $("#f-action")?.addEventListener("change", applyTopFilters);
+    $("#f-culture")?.addEventListener("change", applyTopFilters);
+    $("#f-from")?.addEventListener("change", applyTopFilters);
+    $("#f-to")?.addEventListener("change", applyTopFilters);
+    $("#f-task")?.addEventListener("change", applyTopFilters);
+
+    $("#f-clear")?.addEventListener("click", () => {
+      if ($("#f-action")) $("#f-action").value = "";
+      if ($("#f-culture")) $("#f-culture").value = "";
+      if ($("#f-from")) $("#f-from").value = "";
+      if ($("#f-to")) $("#f-to").value = "";
+      if ($("#f-task")) $("#f-task").value = "";
+      if ($("#rot-family")) $("#rot-family").value = "";
+      if ($("#rot-years")) $("#rot-years").value = 3;
+
+      clearPlotHighlights();
+    });
+
     $("#lang-toggle")?.addEventListener("click", () => {
-  currentLang = currentLang === "fr" ? "nl" : "fr";
+      currentLang = currentLang === "fr" ? "nl" : "fr";
 
-  populateCultureSelect();
-  populateFilterCultureSelect();
-  populateFamilySelect();
-  populateActionSelect();
-  applyTranslations();
+      populateCultureSelect();
+      populateFilterCultureSelect();
+      populateTaskFilterSelect();
+      populateFamilySelect();
+      populateActionSelect();
+      applyTranslations();
 
-  if (currentId != null) {
-    renderHistory(currentId);
-    showCompanionsForCurrentPlot(currentId);
-  }
+      if (currentId != null) {
+        renderHistory(currentId);
+        showCompanionsForCurrentPlot(currentId);
+      }
 
-  applyTopFilters();
-});
+      applyTopFilters();
+    });
 
     console.log("✅ Application stabilisée (mode collaboratif)");
   } catch (err) {
