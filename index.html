@@ -78,7 +78,7 @@
 
   <div class="toolbar" id="filters">
     <label><span data-i18n="f_action">Action</span><select id="f-action"></select></label>
-    <label><span data-i18n="f_culture">Culture</span><input id="f-culture" placeholder="Tomate…"/></label>
+    <label><span data-i18n="f_culture">Culture</span><select id="f-culture"></select></label>
     <label><span data-i18n="f_from">Du</span><input id="f-from" type="date"/></label>
     <label><span data-i18n="f_to">Au</span><input id="f-to" type="date"/></label>
     <label><span data-i18n="rot_family">Famille (rotation)</span><select id="rot-family"></select></label>
@@ -202,11 +202,7 @@
       <select id="family"></select>
       <button id="save" data-i18n="save">Enregistrer</button>
 
-      <div style="margin-top:.6rem">
-        <label style="display:block;margin:.4rem 0" data-i18n="photos_add">Ajouter des photos (jpg/png)</label>
-        <input type="file" id="add-photo" accept="image/*" multiple style="width:100%">
-        <div class="photos" id="photos"></div>
-      </div>
+      
     </div>
 
     <div id="controls">
