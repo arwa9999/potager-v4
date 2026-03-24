@@ -1,10 +1,9 @@
 /* =====================================================
-   🌱 POTAGER — VERSION STABLE COLLABORATIVE
+   🌱 POTAGER — VERSION STABLE COLLABORATIVE CONSOLIDÉE
    ===================================================== */
 
-/* import { listenSection, syncSection } from "./firebase.js";
-*/
 import { listenSection, syncSection, loadSection } from "./firebase.js";
+
 /* =====================================================
    === VARIABLES GLOBALES
    ===================================================== */
@@ -13,7 +12,7 @@ let state = { plots: [] };
 let currentId = null;
 let currentLang = "fr";
 
-let companions = {};
+let companions = [];
 let cultures = {};
 let families = {};
 
@@ -41,7 +40,20 @@ window.i18n = {
   legend_old: { fr: "Ancien", nl: "Oud" },
   panel_add: { fr: "+ Ajouter une action", nl: "+ Actie toevoegen" },
   save: { fr: "Enregistrer", nl: "Opslaan" },
-  export: { fr: "Exporter l’historique (.json)", nl: "Geschiedenis exporteren (.json)" }
+  export: { fr: "Exporter l’historique (.json)", nl: "Geschiedenis exporteren (.json)" },
+  f_action: { fr: "Action", nl: "Actie" },
+  f_culture: { fr: "Culture", nl: "Teelt" },
+  f_from: { fr: "Du", nl: "Van" },
+  f_to: { fr: "Au", nl: "Tot" },
+  f_clear: { fr: "Réinitialiser", nl: "Resetten" },
+  rot_family: { fr: "Famille (rotation)", nl: "Familie (rotatie)" },
+  rot_years: { fr: "Années d'écart", nl: "Jaren tussen" },
+  family_label: { fr: "Famille botanique (optionnel)", nl: "Botanische familie (optioneel)" },
+  storage: { fr: "📦 Sauvegarde", nl: "📦 Opslag" },
+  legend_plot: { fr: "Parcelle", nl: "Perceel" },
+  legend_compost: { fr: "Compost", nl: "Compost" },
+  legend_water: { fr: "Eau", nl: "Water" },
+  legend_pergola: { fr: "Pergola", nl: "Pergola" }
 };
 
 function applyTranslations() {
@@ -51,11 +63,21 @@ function applyTranslations() {
       el.textContent = window.i18n[key][currentLang];
     }
   });
+
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+    const key = el.dataset.i18nPh;
+    if (window.i18n[key]) {
+      el.placeholder = window.i18n[key][currentLang];
+    }
+  });
 }
 
 /* =====================================================
    === UTILITAIRES
    ===================================================== */
+
+const $ = s => document.querySelector(s);
+
 async function loadInitialState() {
   try {
     const data = await loadSection("parcelles");
@@ -66,11 +88,20 @@ async function loadInitialState() {
   }
 }
 
-const $ = s => document.querySelector(s);
+function resetPlotForm() {
+  if ($("#date")) $("#date").value = "";
+  if ($("#action")) $("#action").value = "";
+  if ($("#culture")) $("#culture").value = "";
+  if ($("#family")) $("#family").value = "";
+  if ($("#companions")) $("#companions").innerHTML = "";
+  if ($("#used-variety")) $("#used-variety").value = "";
+  if ($("#used-qty")) $("#used-qty").value = 1;
+}
 
 /* =====================================================
    === PANNEAU LATÉRAL / CLIC PARCELLES
    ===================================================== */
+
 document.addEventListener("click", (e) => {
   const panel = $("#info-panel");
   if (!panel || panel.classList.contains("hidden")) return;
@@ -112,11 +143,7 @@ function setupCloseButton() {
     if ($("#plot-title")) $("#plot-title").textContent = "";
     if ($("#history")) $("#history").innerHTML = "";
 
-    if ($("#date")) $("#date").value = "";
-    if ($("#action")) $("#action").value = "";
-    if ($("#culture")) $("#culture").value = "";
-    if ($("#family")) $("#family").value = "";
-    if ($("#companions")) $("#companions").innerHTML = "";
+    resetPlotForm();
 
     console.log("✅ Panneau fermé");
   });
@@ -124,6 +151,10 @@ function setupCloseButton() {
 
 function setupPlotClicks() {
   const garden = document.getElementById("garden");
+  if (!garden) {
+    console.warn("⚠️ Élément #garden introuvable");
+    return;
+  }
 
   garden.addEventListener("click", e => {
     const rect = e.target.closest("rect.plot");
@@ -131,19 +162,10 @@ function setupPlotClicks() {
 
     currentId = rect.dataset.id;
 
-    $("#plot-title").textContent = `Parcelle ${currentId}`;
-    $("#info-panel").classList.remove("hidden");
+    if ($("#plot-title")) $("#plot-title").textContent = `Parcelle ${currentId}`;
+    $("#info-panel")?.classList.remove("hidden");
 
-    // Reset formulaire
-    $("#date").value = "";
-    $("#action").value = "";
-    $("#culture").value = "";
-    $("#family").value = "";
-    $("#companions").innerHTML = "";
-
-    if ($("#used-variety")) $("#used-variety").value = "";
-    if ($("#used-qty")) $("#used-qty").value = 1;
-
+    resetPlotForm();
     renderHistory(currentId);
     showCompanionsForCurrentPlot(currentId);
   });
@@ -164,30 +186,33 @@ function renderHistory(id) {
   }
 
   div.innerHTML = plot.history.map(h => {
-
     const cultureObj = companions.find(c => c.key === h.culture);
     const cultureLabel = cultureObj
-      ? cultureObj[currentLang]
+      ? (cultureObj[currentLang] || cultureObj.fr || h.culture)
       : h.culture;
+
+    const details = [];
+    if (h.usedVariety) details.push(`variété : ${h.usedVariety}`);
+    if (h.usedQty != null && h.usedQty !== "") details.push(`qté : ${h.usedQty}`);
 
     return `
       <div class="entry">
         <strong>${h.date}</strong><br>
         ${h.action} — ${cultureLabel}
+        ${details.length ? `<br><small>${details.join(" • ")}</small>` : ""}
       </div>
     `;
-
   }).join("");
 }
+
 /* =====================================================
    === SELECTS DYNAMIQUES
    ===================================================== */
+
 function getCurrentCultures(plot) {
   if (!plot || !plot.history?.length) return [];
 
   const active = new Set();
-
-  // On lit de la plus ancienne à la plus récente
   const orderedHistory = [...plot.history].reverse();
 
   for (const entry of orderedHistory) {
@@ -207,18 +232,17 @@ function getCurrentCultures(plot) {
 
   return [...active];
 }
+
 function populateCultureSelect() {
-  const select = document.getElementById("culture");
+  const select = $("#culture");
   if (!select) return;
 
   select.innerHTML = '<option value="">--</option>';
 
   companions.forEach(item => {
     const opt = document.createElement("option");
-
-    opt.value = item.key;          // 🔥 LA CLÉ TECHNIQUE
-    opt.textContent = item[currentLang]; // 🌍 TEXTE AFFICHÉ
-
+    opt.value = item.key;
+    opt.textContent = item[currentLang] || item.fr || item.key;
     select.appendChild(opt);
   });
 }
@@ -276,9 +300,10 @@ function populateActionSelect() {
 /* =====================================================
    === COMPAGNONNAGE
    ===================================================== */
+
 function showCompanionsForCurrentPlot(id) {
   const plot = state.plots.find(p => p.id == id);
-  const div = document.getElementById("companions");
+  const div = $("#companions");
 
   if (!div) return;
 
@@ -313,7 +338,6 @@ function showCompanionsForCurrentPlot(id) {
     (cultureObj.bad || []).forEach(k => allBad.add(k));
   });
 
-  // On retire les cultures déjà présentes de la suggestion
   cultureKeys.forEach(k => {
     allGood.delete(k);
     allBad.delete(k);
@@ -420,59 +444,13 @@ function ensureTitlesAndLabels() {
 }
 
 /* =====================================================
-   === ENREGISTREMENT
+   === STOCK
    ===================================================== */
-function updateStockFromAction(action, cultureKey) {
-  if (!window.StockAPI || !cultureKey) return;
 
-  // Actions qui consomment potentiellement du stock
-  const consumesStock = action === "Semis" || action === "Plantation";
-  if (!consumesStock) return;
-
-  const allStock = window.StockAPI.getAll?.() || [];
-
-  const matchingItems = allStock.filter(item => item.cultureKey === cultureKey);
-
-  if (!matchingItems.length) {
-    console.log(`ℹ️ Aucun stock trouvé pour la culture : ${cultureKey}`);
-    return;
-  }
-
-  // Priorité : semence pour semis, plant pour plantation
-  let chosen = null;
-
-  if (action === "Semis") {
-    chosen = matchingItems.find(item => item.type === "semence" && item.qty > 0);
-  }
-
-  if (action === "Plantation") {
-    chosen = matchingItems.find(item => item.type === "plant" && item.qty > 0)
-      || matchingItems.find(item => item.type === "bulbe" && item.qty > 0);
-  }
-
-  // Fallback : premier article avec stock > 0
-  if (!chosen) {
-    chosen = matchingItems.find(item => item.qty > 0);
-  }
-
-  if (!chosen) {
-    console.warn(`⚠️ Stock trouvé pour ${cultureKey}, mais quantité nulle`);
-    return;
-  }
-
-  const success = window.StockAPI.consume?.({ id: chosen.id }, 1);
-
-  if (success) {
-    console.log(`📦 Stock mis à jour : -1 sur ${chosen.name || chosen.cultureKey}`);
-  } else {
-    console.warn(`⚠️ Impossible de décrémenter le stock pour ${cultureKey}`);
-  }
-}
 function getMatchingStockItems(cultureKey, variety = "", action = "") {
   if (!window.StockAPI?.getAll || !cultureKey) return [];
 
   const allStock = window.StockAPI.getAll() || [];
-
   let items = allStock.filter(item => item.cultureKey === cultureKey);
 
   if (variety) {
@@ -481,7 +459,6 @@ function getMatchingStockItems(cultureKey, variety = "", action = "") {
     );
   }
 
-  // Priorité selon action
   if (action === "Semis") {
     items.sort((a, b) => {
       if (a.type === "semence" && b.type !== "semence") return -1;
@@ -543,6 +520,10 @@ function updateStockFromAction(action, cultureKey, variety = "", qtyUsed = 1) {
   return true;
 }
 
+/* =====================================================
+   === ENREGISTREMENT
+   ===================================================== */
+
 function setupSaveButton() {
   $("#save")?.addEventListener("click", async () => {
     const date = $("#date").value || new Date().toISOString().slice(0, 10);
@@ -557,11 +538,9 @@ function setupSaveButton() {
       return;
     }
 
-    // 1) vérifier / décrémenter le stock si nécessaire
     const stockOk = updateStockFromAction(action, culture, usedVariety, usedQty);
     if (!stockOk) return;
 
-    // 2) enregistrer dans l’historique parcelle
     let plot = state.plots.find(p => p.id == currentId);
 
     if (!plot) {
@@ -580,34 +559,14 @@ function setupSaveButton() {
 
     await syncSection("parcelles", state);
 
-    function renderHistory(id) {
-  const plot = state.plots.find(p => p.id == id);
-  const div = document.getElementById("history");
-  if (!div) return;
+    renderHistory(currentId);
+    showCompanionsForCurrentPlot(currentId);
 
-  if (!plot || !plot.history?.length) {
-    div.innerHTML = "—";
-    return;
-  }
+    if ($("#used-variety")) $("#used-variety").value = "";
+    if ($("#used-qty")) $("#used-qty").value = 1;
 
-  div.innerHTML = plot.history.map(h => {
-    const cultureObj = companions.find(c => c.key === h.culture);
-    const cultureLabel = cultureObj
-      ? (cultureObj[currentLang] || cultureObj.fr || h.culture)
-      : h.culture;
-
-    const details = [];
-    if (h.usedVariety) details.push(`variété : ${h.usedVariety}`);
-    if (h.usedQty) details.push(`qté : ${h.usedQty}`);
-
-    return `
-      <div class="entry">
-        <strong>${h.date}</strong><br>
-        ${h.action} — ${cultureLabel}
-        ${details.length ? `<br><small>${details.join(" • ")}</small>` : ""}
-      </div>
-    `;
-  }).join("");
+    console.log("💾 Action enregistrée + stock mis à jour");
+  });
 }
 
 /* =====================================================
@@ -653,7 +612,7 @@ async function init() {
       updateCompanions(e.target.value);
     });
 
-    document.getElementById("lang-toggle")?.addEventListener("click", () => {
+    $("#lang-toggle")?.addEventListener("click", () => {
       currentLang = currentLang === "fr" ? "nl" : "fr";
 
       populateCultureSelect();
@@ -661,7 +620,7 @@ async function init() {
       populateActionSelect();
       applyTranslations();
 
-      if (currentId) {
+      if (currentId != null) {
         renderHistory(currentId);
         showCompanionsForCurrentPlot(currentId);
       }
