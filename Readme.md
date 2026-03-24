@@ -1,23 +1,30 @@
 # 🌱 Potager – Gestion intelligente de parcelles
 
-Application web collaborative pour la gestion d’un potager (individuel ou collectif) avec aide à la décision intégrée.
+Application web collaborative pour la gestion d’un potager individuel ou collectif, avec plan interactif, historique par parcelle, compagnonnage, gestion de stock et outils d’aide à la décision.
 
-🔗 Accès en ligne : https://arwa9999.github.io/potager-v4/
+**Accès en ligne :**  
+https://arwa9999.github.io/potager-v4/
 
 ---
 
 ## 🎯 Objectif du projet
 
-Ce projet vise à créer un outil simple, visuel et structuré permettant :
+Ce projet vise à créer un outil simple, visuel et structuré permettant de :
 
-* De gérer des parcelles de potager via un plan interactif
-* D’enregistrer les actions (semis, plantation, récolte…)
-* De conserver un historique par parcelle
-* D’afficher automatiquement le compagnonnage
-* De synchroniser les données en temps réel
-* De fonctionner en français et néerlandais
+- gérer un potager à partir d’un **plan interactif**
+- enregistrer les actions réalisées sur chaque parcelle
+- conserver un **historique détaillé**
+- visualiser les cultures en place et leur **compagnonnage**
+- gérer un **stock de semences, plants et bulbes**
+- partager les données entre plusieurs utilisateurs
+- fonctionner en **français et en néerlandais**
 
-L’outil est pensé pour être évolutif, collaboratif et pédagogique.
+L’outil est pensé pour être :
+
+- **évolutif**
+- **collaboratif**
+- **pédagogique**
+- **utilisable en jardin partagé**
 
 ---
 
@@ -25,48 +32,127 @@ L’outil est pensé pour être évolutif, collaboratif et pédagogique.
 
 ### 🗺 Plan interactif
 
-* Plan SVG des parcelles
-* Numérotation automatique
-* Sélection dynamique d’une parcelle
+- plan SVG des parcelles
+- numérotation automatique des parcelles
+- ouverture d’un panneau latéral au clic
+- affichage dynamique des informations liées à la parcelle sélectionnée
 
 ### 📝 Historique par parcelle
 
-* Enregistrement des actions avec date
-* Historique affiché dans le panneau latéral
-* Stockage structuré par clé technique
+Chaque parcelle possède un historique structuré des actions réalisées :
+
+- semis
+- plantation
+- récolte
+- arrachage
+- engrais
+
+Chaque entrée peut inclure :
+
+- date
+- culture
+- famille botanique
+- variété utilisée
+- quantité utilisée
 
 ### 🌿 Compagnonnage intelligent
 
-* Détection automatique de la culture en place
-* Affichage des cultures favorables et défavorables
-* Traduction dynamique FR / NL
+Le système analyse les cultures actuellement en place dans une parcelle et affiche :
+
+- les cultures compatibles
+- les cultures à éviter
+- les recommandations dans la langue de l’interface
+
+Le compagnonnage est basé sur des **clés techniques stables**, indépendantes des libellés affichés.
+
+### 📦 Gestion du stock
+
+Le projet intègre un module de stock permettant de gérer :
+
+- semences
+- plants
+- bulbes
+
+Chaque article peut contenir :
+
+- nom affiché
+- clé technique de culture
+- variété
+- quantité
+- unité
+- type
+- année
+- durée de viabilité
+- seuil bas
+- source
+- notes
+
+Deux modes sont disponibles :
+
+- **📦 gestion du stock** : ajout, modification, suppression
+- **📋 état du stock** : vue de consultation rapide pour savoir ce qui est disponible, faible, épuisé ou à remplacer
+
+### 🔁 Mise à jour automatique du stock
+
+Lorsqu’un **semis** ou une **plantation** est encodé dans une parcelle, l’application peut :
+
+- retrouver l’article concerné dans le stock
+- prendre en compte la variété si elle est précisée
+- décrémenter automatiquement la quantité utilisée
+
+### 🎯 Filtres visuels sur le plan
+
+Le bandeau supérieur permet de mettre les parcelles en évidence selon :
+
+- une action
+- une culture
+- une période
+- un état / une tâche
+
+Les parcelles peuvent ainsi être colorées pour visualiser rapidement :
+
+- les semis
+- les plantations
+- les récoltes
+- les arrachages
+- les parcelles encore occupées
+- les parcelles vides
+- les zones à surveiller
+
+### 🌍 Interface multilingue
+
+- français / néerlandais
+- traduction dynamique sans rechargement
+- séparation claire entre :
+  - données techniques stockées
+  - libellés visibles par l’utilisateur
 
 ### 🔄 Synchronisation collaborative
 
-* Données partagées via Firebase Realtime Database
-* Mise à jour en temps réel
-* Multi-utilisateur
+Les données sont partagées via **Firebase Realtime Database** :
 
-### 🌍 Multilingue
-
-* Interface FR / NL
-* Traduction dynamique sans rechargement
-* Les données stockées restent indépendantes de la langue
+- synchronisation automatique
+- mise à jour en temps réel
+- usage multi-utilisateur
+- fonctionnement adapté à un potager collectif
 
 ---
 
 ## 🧠 Architecture technique
 
-* **Frontend** : HTML / CSS / JavaScript (vanilla)
-* **Base de données** : Firebase Realtime Database
-* **Hébergement** : GitHub Pages
-* **Structure des cultures** : JSON structuré par clé (`key`)
+- **Frontend** : HTML / CSS / JavaScript vanilla
+- **Base de données** : Firebase Realtime Database
+- **Hébergement** : GitHub Pages
+- **Données cultures** : JSON structuré par clé technique
+- **Plan** : SVG interactif
 
 ---
 
 ## 📦 Structure des données
 
-Chaque parcelle est stockée sous forme :
+### Parcelles
+
+Chaque parcelle est stockée sous forme structurée :
 
 ```json
 {
@@ -75,46 +161,65 @@ Chaque parcelle est stockée sous forme :
     {
       "date": "2026-03-03",
       "action": "Semis",
-      "culture": "fava"
+      "culture": "fava",
+      "family": "fabaceae",
+      "usedVariety": "aguadulce",
+      "usedQty": 0.5
     }
   ]
 }
-```
-
-### Important :
-
-* Les cultures sont enregistrées par **clé technique stable**
-* L’affichage utilise la traduction dynamique
-* Les labels ne sont jamais stockés en base
 
 ---
 
-## 🔐 Synchronisation
+### Stock
 
-Les données sont partagées entre tous les utilisateurs accédant à l’application.
-Chaque modification est synchronisée automatiquement.
+Le stock repose sur une structure de type :
+{
+  "id": "uuid",
+  "name": "Fenouil bronze",
+  "cultureKey": "fennel",
+  "variety": "bronze",
+  "qty": 1,
+  "unit": "sachet",
+  "type": "semence",
+  "year": 2025,
+  "viabilityYears": 2,
+  "lowStockThreshold": 0.5,
+  "source": "semaille.com",
+  "notes": ""
+}
 
 ---
 
-## 🌱 Philosophie du projet
+🌱 Philosophie du projet
 
-Ce projet repose sur :
+Le projet repose sur plusieurs principes :
 
-* La séparation entre données techniques et affichage
-* Une architecture simple mais évolutive
-* Une approche pédagogique du compagnonnage
-* Une logique collaborative adaptée aux jardins partagés
+séparer les données métier et l’affichage
+construire une base simple mais solide
+favoriser la lisibilité et l’usage concret sur le terrain
+proposer une logique compatible avec les jardins partagés
+garder une approche pédagogique autour :
+des cultures
+du compagnonnage
+de la rotation
+du suivi saisonnier
+👥 Usages visés
 
----
+L’application peut être utilisée pour :
 
-## 🔮 Évolutions envisagées
+un potager individuel
+un jardin collectif
+un projet de quartier
+un usage pédagogique
+un support de suivi pour bénévoles ou habitants
 
-* Rotation automatique des familles botaniques
-* Alerte conflits entre parcelles voisines
-* Visualisation saisonnière
-* Export PDF du plan et historique
-* Indicateur de santé des parcelles
-* Dashboard de suivi annuel
+Elle permet à une personne de saisir les données, mais aussi à d’autres de :
+
+consulter l’état des parcelles
+voir ce qui est en place
+vérifier le stock disponible
+identifier les tâches restantes
 
 ---
 
