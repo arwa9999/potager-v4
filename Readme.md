@@ -168,7 +168,7 @@ Chaque parcelle est stockée sous forme structurée :
     }
   ]
 }
-
+```
 ---
 
 ### Stock
