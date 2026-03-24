@@ -253,7 +253,37 @@ rect.plot:hover {
   background:#eee;
 }
 
+.plot-dim {
+  opacity: 0.18;
+}
 
+.plot-match {
+  opacity: 1 !important;
+}
+
+.plot-semence {
+  stroke: #1e88e5;
+  stroke-width: 4;
+}
+
+.plot-plantation {
+  stroke: #43a047;
+  stroke-width: 4;
+}
+
+.plot-recolte {
+  stroke: #fb8c00;
+  stroke-width: 4;
+}
+
+.plot-arrachage {
+  stroke: #e53935;
+  stroke-width: 4;
+}
+
+.plot-label-dim {
+  opacity: 0.25;
+}
 
 
 
