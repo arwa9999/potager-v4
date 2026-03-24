@@ -113,34 +113,38 @@ import { syncSection, loadSection } from "./firebase.js";
     }
 
     function getStatus(item) {
-      const low = item.qty <= (item.lowStockThreshold || 0);
+  if (item.qty === 0) return "empty";
 
-      if (item.year && item.viabilityYears != null) {
-        const age = currentYear() - item.year;
-        if (age > item.viabilityYears) return "expired";
-        if (age === item.viabilityYears) return low ? "last_year_low" : "last_year";
-      }
+  const low = item.qty <= (item.lowStockThreshold || 0);
 
-      if (low) return "low";
-      return "ok";
-    }
+  if (item.year && item.viabilityYears != null) {
+    const age = currentYear() - item.year;
+    if (age > item.viabilityYears) return "expired";
+    if (age === item.viabilityYears) return low ? "last_year_low" : "last_year";
+  }
+
+  if (low) return "low";
+  return "ok";
+}
 
     function getStatusLabel(item) {
-      const status = getStatus(item);
+  const status = getStatus(item);
 
-      switch (status) {
-        case "expired":
-          return "🔴 À remplacer";
-        case "last_year":
-          return "🟠 Dernière année";
-        case "last_year_low":
-          return "🟠 Dernière année / stock bas";
-        case "low":
-          return "🟡 Stock bas";
-        default:
-          return "🟢 OK";
-      }
-    }
+  switch (status) {
+    case "empty":
+      return "⚫ Épuisé";
+    case "expired":
+      return "🔴 À remplacer";
+    case "last_year":
+      return "🟠 Dernière année";
+    case "last_year_low":
+      return "🟠 Dernière année / stock bas";
+    case "low":
+      return "🟡 Stock bas";
+    default:
+      return "🟢 OK";
+  }
+}
 
     function sameItem(a, b) {
       return (
@@ -559,34 +563,30 @@ async function populateStockCultureSelect() {
       },
 
       remove: (matcher, qty = 1) => {
-        let item = null;
+  let item = null;
 
-        if (typeof matcher === "string") {
-          item = stock.find(i => i.name.toLowerCase() === matcher.toLowerCase());
-        } else if (matcher?.id) {
-          item = stock.find(i => i.id === matcher.id);
-        } else if (matcher?.cultureKey) {
-          item = stock.find(i =>
-            i.cultureKey === matcher.cultureKey &&
-            (!matcher.variety || i.variety === matcher.variety)
-          );
-        }
+  if (typeof matcher === "string") {
+    item = stock.find(i => i.name.toLowerCase() === matcher.toLowerCase());
+  } else if (matcher?.id) {
+    item = stock.find(i => i.id === matcher.id);
+  } else if (matcher?.cultureKey) {
+    item = stock.find(i =>
+      i.cultureKey === matcher.cultureKey &&
+      (!matcher.variety || i.variety === matcher.variety)
+    );
+  }
 
-        if (!item) return false;
+  if (!item) return false;
 
-        item.qty = Math.max(0, item.qty - qty);
-        item.updatedAt = new Date().toISOString();
+  item.qty = Math.max(0, item.qty - qty);
+  item.updatedAt = new Date().toISOString();
 
-        if (item.qty === 0) {
-          stock = stock.filter(i => i.id !== item.id);
-        }
-
-        saveLocal();
-        render();
-        renderStockView();
-        syncToCloudDebounced();
-        return true;
-      },
+  saveLocal();
+  render();
+  renderStockView();
+  syncToCloudDebounced();
+  return true;
+},
 
       consume: (matcher, qty = 1) => {
         return window.StockAPI.remove(matcher, qty);
