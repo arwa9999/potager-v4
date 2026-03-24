@@ -15,6 +15,7 @@ let currentLang = "fr";
 let companions = [];
 let cultures = {};
 let families = {};
+let harvestWindows = {};
 
 /* =====================================================
    === FIREBASE TEMPS RÉEL
@@ -62,6 +63,9 @@ window.i18n = {
 const taskLabels = {
   all: { fr: "--", nl: "--" },
   to_harvest: { fr: "À récolter", nl: "Te oogsten" },
+  soon_harvest: { fr: "Bientôt à récolter", nl: "Binnenkort oogsten" },
+  ready_harvest: { fr: "Prêt à récolter", nl: "Klaar om te oogsten" },
+  late_harvest: { fr: "En retard / à surveiller", nl: "Te laat / controleren" },
   to_clear: { fr: "À arracher", nl: "Te ruimen" },
   in_place: { fr: "En place", nl: "Aanwezig" },
   empty: { fr: "Vides", nl: "Leeg" }
@@ -215,7 +219,7 @@ function renderHistory(id) {
 }
 
 /* =====================================================
-   === SELECTS DYNAMIQUES
+   === ANALYSE PARCELLES
    ===================================================== */
 
 function getCurrentCultures(plot) {
@@ -296,6 +300,79 @@ function analyzePlotState(plot) {
     isEmpty: activeCultures.length === 0
   };
 }
+
+function getActiveCultureTimings(plot) {
+  if (!plot || !plot.history?.length) return [];
+
+  const orderedHistory = [...plot.history].reverse();
+  const activeMap = new Map();
+
+  for (const entry of orderedHistory) {
+    const action = entry.action;
+    const culture = entry.culture;
+    const date = entry.date;
+
+    if (!culture || !date) continue;
+
+    if (action === "Semis" || action === "Plantation") {
+      activeMap.set(culture, {
+        culture,
+        startDate: date,
+        action
+      });
+    }
+
+    if (action === "Arrachage") {
+      activeMap.delete(culture);
+    }
+  }
+
+  return [...activeMap.values()];
+}
+
+function getHarvestReadiness(plot) {
+  const activeCultures = getActiveCultureTimings(plot);
+  const today = new Date();
+
+  return activeCultures.map(item => {
+    const window = harvestWindows[item.culture];
+
+    if (!window || window.min == null || window.max == null) {
+      return {
+        culture: item.culture,
+        status: "unknown",
+        daysElapsed: null,
+        min: null,
+        max: null
+      };
+    }
+
+    const start = new Date(item.startDate);
+    const daysElapsed = Math.floor((today - start) / 86400000);
+
+    let status = "growing";
+
+    if (daysElapsed >= window.max) {
+      status = "late_harvest";
+    } else if (daysElapsed >= window.min) {
+      status = "ready_harvest";
+    } else if (daysElapsed >= Math.max(1, window.min - 14)) {
+      status = "soon_harvest";
+    }
+
+    return {
+      culture: item.culture,
+      status,
+      daysElapsed,
+      min: window.min,
+      max: window.max
+    };
+  });
+}
+
+/* =====================================================
+   === SELECTS DYNAMIQUES
+   ===================================================== */
 
 function populateCultureSelect() {
   const select = $("#culture");
@@ -549,6 +626,9 @@ function clearPlotHighlights() {
       "plot-recolte",
       "plot-arrachage",
       "plot-task-harvest",
+      "plot-task-soon",
+      "plot-task-ready",
+      "plot-task-late",
       "plot-task-clear",
       "plot-task-inplace",
       "plot-task-empty"
@@ -579,6 +659,12 @@ function getTaskClass(task) {
   switch (task) {
     case "to_harvest":
       return "plot-task-harvest";
+    case "soon_harvest":
+      return "plot-task-soon";
+    case "ready_harvest":
+      return "plot-task-ready";
+    case "late_harvest":
+      return "plot-task-late";
     case "to_clear":
       return "plot-task-clear";
     case "in_place":
@@ -592,16 +678,34 @@ function getTaskClass(task) {
 
 function plotMatchesTask(plot, task) {
   const analysis = analyzePlotState(plot);
+  const harvestStates = getHarvestReadiness(plot);
 
   switch (task) {
     case "to_harvest":
-      return analysis.growingCultures.length > 0;
+      return harvestStates.some(x =>
+        x.status === "soon_harvest" ||
+        x.status === "ready_harvest" ||
+        x.status === "late_harvest"
+      );
+
+    case "soon_harvest":
+      return harvestStates.some(x => x.status === "soon_harvest");
+
+    case "ready_harvest":
+      return harvestStates.some(x => x.status === "ready_harvest");
+
+    case "late_harvest":
+      return harvestStates.some(x => x.status === "late_harvest");
+
     case "to_clear":
       return analysis.harvestedCultures.length > 0;
+
     case "in_place":
       return analysis.activeCultures.length > 0;
+
     case "empty":
       return analysis.isEmpty;
+
     default:
       return true;
   }
@@ -841,6 +945,7 @@ async function loadStaticData() {
   companions = await fetch("./companions_bilingual.json").then(r => r.json());
   cultures = await fetch("./cultDict.json").then(r => r.json());
   families = await fetch("./families.json").then(r => r.json());
+  harvestWindows = await fetch("./harvest_windows.json").then(r => r.json());
 }
 
 /* =====================================================
