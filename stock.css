@@ -282,7 +282,22 @@ rect.plot:hover {
 }
 
 .plot-task-harvest {
+  stroke: #5e35b1;
+  stroke-width: 4;
+}
+
+.plot-task-soon {
+  stroke: #fdd835;
+  stroke-width: 4;
+}
+
+.plot-task-ready {
   stroke: #8e24aa;
+  stroke-width: 4;
+}
+
+.plot-task-late {
+  stroke: #d81b60;
   stroke-width: 4;
 }
 
@@ -304,21 +319,6 @@ rect.plot:hover {
 .plot-label-dim {
   opacity: 0.25;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
