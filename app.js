@@ -620,37 +620,52 @@ async function loadStaticData() {
    ===================================================== */
 
 async function init() {
-  await loadStaticData();
-  await loadInitialState();
-  populateCultureSelect();
-  populateFamilySelect();
-  populateActionSelect();
-  applyTranslations();
-  setupCloseButton();
-  setupEscapeClose();
-  ensureTitlesAndLabels();
-  setupPlotClicks();
-  setupSaveButton();
-
-  $("#culture")?.addEventListener("change", e => {
-    updateCompanions(e.target.value);
-  });
-
-  document.getElementById("lang-toggle")?.addEventListener("click", () => {
-  currentLang = currentLang === "fr" ? "nl" : "fr";
-
-  populateCultureSelect();
-  populateFamilySelect();
-  populateActionSelect();
-  applyTranslations();
-
-  if (currentId) {
-    renderHistory(currentId);
-    showCompanionsForCurrentPlot(currentId);
+  try {
+    await loadStaticData();
+  } catch (err) {
+    console.error("❌ Erreur loadStaticData :", err);
   }
-});
 
-  console.log("✅ Application stabilisée (mode collaboratif)");
+  try {
+    await loadInitialState();
+  } catch (err) {
+    console.error("❌ Erreur loadInitialState :", err);
+    state = { plots: [] };
+  }
+
+  try {
+    populateCultureSelect();
+    populateFamilySelect();
+    populateActionSelect();
+    applyTranslations();
+    setupCloseButton();
+    setupEscapeClose();
+    ensureTitlesAndLabels();
+    setupPlotClicks();
+    setupSaveButton();
+
+    $("#culture")?.addEventListener("change", e => {
+      updateCompanions(e.target.value);
+    });
+
+    document.getElementById("lang-toggle")?.addEventListener("click", () => {
+      currentLang = currentLang === "fr" ? "nl" : "fr";
+
+      populateCultureSelect();
+      populateFamilySelect();
+      populateActionSelect();
+      applyTranslations();
+
+      if (currentId) {
+        renderHistory(currentId);
+        showCompanionsForCurrentPlot(currentId);
+      }
+    });
+
+    console.log("✅ Application stabilisée (mode collaboratif)");
+  } catch (err) {
+    console.error("❌ Erreur pendant init :", err);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);
