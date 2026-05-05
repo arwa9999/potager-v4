@@ -2,7 +2,7 @@
    🌱 POTAGER — VERSION STABLE COLLABORATIVE CONSOLIDÉE
    ===================================================== */
 
-import { listenSection, syncSection, loadSection } from "./firebase.js";
+import { listenSection, syncSection, loadSection, addPlotHistoryEntry } from "./firebase.js";
 
 /* =====================================================
    === VARIABLES GLOBALES
@@ -910,6 +910,17 @@ function setupSaveButton() {
     const stockOk = updateStockFromAction(action, culture, usedVariety, usedQty);
     if (!stockOk) return;
 
+    const entry = {
+      id: crypto.randomUUID(),
+      date,
+      action,
+      culture,
+      family,
+      usedVariety,
+      usedQty,
+      createdAt: Date.now()
+    };
+
     let plot = state.plots.find(p => p.id == currentId);
 
     if (!plot) {
@@ -917,23 +928,27 @@ function setupSaveButton() {
       state.plots.push(plot);
     }
 
-    plot.history.unshift({
-      date,
-      action,
-      culture,
-      family,
-      usedVariety,
-      usedQty
-    });
+    if (!Array.isArray(plot.history)) {
+      plot.history = [];
+    }
 
-    await syncSection("parcelles", state);
+    plot.history.unshift(entry);
 
     renderHistory(currentId);
     showCompanionsForCurrentPlot(currentId);
     applyTopFilters();
 
-    if ($("#used-variety")) $("#used-variety").value = "";
-    if ($("#used-qty")) $("#used-qty").value = 1;
+    try {
+      await addPlotHistoryEntry(currentId, entry);
+
+      if ($("#used-variety")) $("#used-variety").value = "";
+      if ($("#used-qty")) $("#used-qty").value = 1;
+
+      console.log("💾 Action enregistrée sans écrasement");
+    } catch (err) {
+      console.error("❌ Erreur enregistrement historique :", err);
+      alert("Erreur pendant l’enregistrement. Recharge la page avant de réessayer.");
+    }
   });
 }
 
