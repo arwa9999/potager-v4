@@ -129,4 +129,126 @@ export async function addPlotHistoryEntry(plotId, entry) {
 
   return result.snapshot.val();
 }
+
+export async function saveStockItem(item) {
+  const stockRef = ref(db, `${BASE_PATH}/stock`);
+
+  const result = await runTransaction(stockRef, currentData => {
+    const stock = Array.isArray(currentData) ? currentData : [];
+
+    const safeItem = {
+      ...item,
+      id: item.id || crypto.randomUUID(),
+      qty: Math.max(0, Number(item.qty || 0)),
+      createdAt: item.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    const existing = stock.find(x => x.id === safeItem.id);
+
+    if (existing) {
+      Object.assign(existing, safeItem);
+    } else {
+      stock.push(safeItem);
+    }
+
+    return stock;
+  });
+
+  if (!result.committed) {
+    throw new Error("Stock non sauvegardé");
+  }
+
+  return result.snapshot.val();
+}
+
+export async function changeStockQty(itemId, delta) {
+  const stockRef = ref(db, `${BASE_PATH}/stock`);
+
+  const result = await runTransaction(stockRef, currentData => {
+    const stock = Array.isArray(currentData) ? currentData : [];
+    const item = stock.find(x => x.id === itemId);
+
+    if (!item) return stock;
+
+    item.qty = Math.max(0, Number(item.qty || 0) + Number(delta || 0));
+    item.updatedAt = new Date().toISOString();
+
+    return stock;
+  });
+
+  if (!result.committed) {
+    throw new Error("Quantité stock non modifiée");
+  }
+
+  return result.snapshot.val();
+}
+
+export async function setStockQty(itemId, qty) {
+  const stockRef = ref(db, `${BASE_PATH}/stock`);
+
+  const result = await runTransaction(stockRef, currentData => {
+    const stock = Array.isArray(currentData) ? currentData : [];
+    const item = stock.find(x => x.id === itemId);
+
+    if (!item) return stock;
+
+    item.qty = Math.max(0, Number(qty || 0));
+    item.updatedAt = new Date().toISOString();
+
+    return stock;
+  });
+
+  if (!result.committed) {
+    throw new Error("Quantité stock non définie");
+  }
+
+  return result.snapshot.val();
+}
+
+export async function deleteStockItem(itemId) {
+  const stockRef = ref(db, `${BASE_PATH}/stock`);
+
+  const result = await runTransaction(stockRef, currentData => {
+    const stock = Array.isArray(currentData) ? currentData : [];
+    return stock.filter(x => x.id !== itemId);
+  });
+
+  if (!result.committed) {
+    throw new Error("Article stock non supprimé");
+  }
+
+  return result.snapshot.val();
+}
+
+export async function consumeStockItem(itemId, qty = 1) {
+  const stockRef = ref(db, `${BASE_PATH}/stock`);
+
+  const result = await runTransaction(stockRef, currentData => {
+    const stock = Array.isArray(currentData) ? currentData : [];
+    const item = stock.find(x => x.id === itemId);
+
+    if (!item) return stock;
+
+    const currentQty = Number(item.qty || 0);
+    const usedQty = Number(qty || 1);
+
+    if (currentQty < usedQty) {
+      return stock;
+    }
+
+    item.qty = Math.max(0, currentQty - usedQty);
+    item.updatedAt = new Date().toISOString();
+
+    return stock;
+  });
+
+  if (!result.committed) {
+    throw new Error("Stock non consommé");
+  }
+
+  return result.snapshot.val();
+}
+
+
 console.log("🔥 Firebase initialisé — mode partagé");
