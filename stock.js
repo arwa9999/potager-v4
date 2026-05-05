@@ -1,5 +1,11 @@
 // stock.js — Gestion du stock de semences / plants / bulbes avec Firebase (v3)
-import { syncSection, loadSection } from "./firebase.js";
+import {
+  loadSection,
+  saveStockItem,
+  changeStockQty,
+  setStockQty,
+  deleteStockItem
+} from "./firebase.js";
 
 (function () {
   document.addEventListener("DOMContentLoaded", () => {
@@ -243,25 +249,7 @@ import { syncSection, loadSection } from "./firebase.js";
       }
     }
 
-    async function syncToCloudDebounced() {
-      if (isSyncing) return;
-
-      clearTimeout(syncTimer);
-      syncTimer = setTimeout(async () => {
-        try {
-          isSyncing = true;
-          setSyncState("syncing");
-          await syncSection("stock", stock);
-          setSyncState("ok");
-          console.log("☁️ Stock synchronisé → Firebase");
-        } catch (e) {
-          console.warn("⚠️ syncToCloud échouée :", e);
-          setSyncState("offline");
-        } finally {
-          isSyncing = false;
-        }
-      }, 500);
-    }
+  
 
     /* =========================================================
        === RENDER GESTION
@@ -405,81 +393,118 @@ async function populateStockCultureSelect() {
 }
 
     
-    function addItemFromForm() {
-      const draft = normalizeItem({
-        name: nameEl?.value,
-        cultureKey: cultureEl?.value,
-        variety: varietyEl?.value,
-        qty: qtyEl?.value || 0,
-        unit: unitEl?.value || "pcs",
-        type: typeEl?.value,
-        year: yearEl?.value,
-        viabilityYears: viabilityEl?.value,
-        lowStockThreshold: thresholdEl?.value,
-        source: sourceEl?.value,
-        notes: notesEl?.value
-      });
+    async function addItemFromForm() {
+  const draft = normalizeItem({
+    name: nameEl?.value,
+    cultureKey: cultureEl?.value,
+    variety: varietyEl?.value,
+    qty: qtyEl?.value || 0,
+    unit: unitEl?.value || "pcs",
+    type: typeEl?.value,
+    year: yearEl?.value,
+    viabilityYears: viabilityEl?.value,
+    lowStockThreshold: thresholdEl?.value,
+    source: sourceEl?.value,
+    notes: notesEl?.value
+  });
 
-      if (!draft.name && !draft.cultureKey) {
-  alert("Nom ou culture requis");
-  return;
+  if (!draft.name && !draft.cultureKey) {
+    alert("Nom ou culture requis");
+    return;
+  }
+
+  stock.push(draft);
+  saveLocal();
+  render();
+  renderStockView();
+
+  try {
+    setSyncState("syncing");
+    stock = await saveStockItem(draft);
+    saveLocal();
+    render();
+    renderStockView();
+    setSyncState("ok");
+    clearForm();
+  } catch (e) {
+    console.warn("⚠️ Ajout stock échoué :", e);
+    setSyncState("offline");
+    alert("Erreur pendant l’ajout du stock.");
+  }
 }
 
-      const existing = stock.find(item => sameItem(item, draft));
 
-      if (existing) {
-        existing.qty += draft.qty;
-        existing.updatedAt = new Date().toISOString();
-      } else {
-        stock.push(draft);
-      }
 
-      saveLocal();
-      render();
-      renderStockView();
-      syncToCloudDebounced();
-      clearForm();
-    }
+    async function updateQty(id, newQty) {
+  const item = stock.find(i => i.id === id);
+  if (!item) return;
 
-    function updateQty(id, newQty) {
-      const item = stock.find(i => i.id === id);
-      if (!item) return;
+  item.qty = Math.max(0, Number(newQty || 0));
+  item.updatedAt = new Date().toISOString();
 
-      item.qty = Math.max(0, Number(newQty || 0));
-      item.updatedAt = new Date().toISOString();
+  saveLocal();
+  render();
+  renderStockView();
 
-      saveLocal();
-      render();
-      renderStockView();
-      syncToCloudDebounced();
-    }
+  try {
+    setSyncState("syncing");
+    stock = await setStockQty(id, item.qty);
+    saveLocal();
+    render();
+    renderStockView();
+    setSyncState("ok");
+  } catch (e) {
+    console.warn("⚠️ Modification quantité échouée :", e);
+    setSyncState("offline");
+  }
+}
+    async function changeQty(id, delta) {
+  const item = stock.find(i => i.id === id);
+  if (!item) return;
 
-    function changeQty(id, delta) {
-      const item = stock.find(i => i.id === id);
-      if (!item) return;
+  item.qty = Math.max(0, item.qty + delta);
+  item.updatedAt = new Date().toISOString();
 
-      item.qty = Math.max(0, item.qty + delta);
-      item.updatedAt = new Date().toISOString();
+  saveLocal();
+  render();
+  renderStockView();
 
-      saveLocal();
-      render();
-      renderStockView();
-      syncToCloudDebounced();
-    }
+  try {
+    setSyncState("syncing");
+    stock = await changeStockQty(id, delta);
+    saveLocal();
+    render();
+    renderStockView();
+    setSyncState("ok");
+  } catch (e) {
+    console.warn("⚠️ Changement quantité échoué :", e);
+    setSyncState("offline");
+  }
+}
 
-    function deleteItem(id) {
-      const idx = stock.findIndex(i => i.id === id);
-      if (idx < 0) return;
+    async function deleteItem(id) {
+  const idx = stock.findIndex(i => i.id === id);
+  if (idx < 0) return;
 
-      if (!confirm("Supprimer cet article ?")) return;
+  if (!confirm("Supprimer cet article ?")) return;
 
-      stock.splice(idx, 1);
-      saveLocal();
-      render();
-      renderStockView();
-      syncToCloudDebounced();
-    }
+  stock.splice(idx, 1);
+  saveLocal();
+  render();
+  renderStockView();
 
+  try {
+    setSyncState("syncing");
+    stock = await deleteStockItem(id);
+    saveLocal();
+    render();
+    renderStockView();
+    setSyncState("ok");
+  } catch (e) {
+    console.warn("⚠️ Suppression stock échouée :", e);
+    setSyncState("offline");
+  }
+}
     /* =========================================================
        === EVENTS
        ========================================================= */
@@ -559,7 +584,7 @@ async function populateStockCultureSelect() {
         saveLocal();
         render();
         renderStockView();
-        syncToCloudDebounced();
+        saveStockItem(item);
       },
 
       remove: (matcher, qty = 1) => {
@@ -584,7 +609,7 @@ async function populateStockCultureSelect() {
   saveLocal();
   render();
   renderStockView();
-  syncToCloudDebounced();
+  changeStockQty(item.id, -qty);
   return true;
 },
 
