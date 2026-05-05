@@ -1,12 +1,12 @@
 // firebase.js — Potager partagé (multi-utilisateur)
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { 
-  getDatabase, 
-  ref, 
-  set, 
-  get, 
-  child, 
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  child,
   onValue,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
@@ -103,14 +103,21 @@ export async function addPlotHistoryEntry(plotId, entry) {
       plot.history = [];
     }
 
-    const alreadyExists = plot.history.some(h => h.id && h.id === entry.id);
+    const safeEntry = {
+      id: entry.id || crypto.randomUUID(),
+      date: entry.date,
+      action: entry.action,
+      culture: entry.culture,
+      family: entry.family || "",
+      usedVariety: entry.usedVariety || "",
+      usedQty: entry.usedQty ?? 1,
+      createdAt: entry.createdAt || Date.now()
+    };
+
+    const alreadyExists = plot.history.some(h => h.id === safeEntry.id);
 
     if (!alreadyExists) {
-      plot.history.unshift({
-        ...entry,
-        id: entry.id || crypto.randomUUID(),
-        createdAt: entry.createdAt || Date.now()
-      });
+      plot.history.unshift(safeEntry);
     }
 
     return data;
