@@ -921,32 +921,19 @@ function setupSaveButton() {
       createdAt: Date.now()
     };
 
-    let plot = state.plots.find(p => p.id == currentId);
-
-    if (!plot) {
-      plot = { id: Number(currentId), history: [] };
-      state.plots.push(plot);
-    }
-
-    if (!Array.isArray(plot.history)) {
-      plot.history = [];
-    }
-
-    plot.history.unshift(entry);
-
-    renderHistory(currentId);
-    showCompanionsForCurrentPlot(currentId);
-    applyTopFilters();
-
     try {
       await addPlotHistoryEntry(currentId, entry);
+
+      renderHistory(currentId);
+      showCompanionsForCurrentPlot(currentId);
+      applyTopFilters();
 
       if ($("#used-variety")) $("#used-variety").value = "";
       if ($("#used-qty")) $("#used-qty").value = 1;
 
-      console.log("💾 Action enregistrée sans écrasement");
+      console.log("✅ Suivi ajouté en mode collaboratif");
     } catch (err) {
-      console.error("❌ Erreur enregistrement historique :", err);
+      console.error("❌ Erreur ajout suivi :", err);
       alert("Erreur pendant l’enregistrement. Recharge la page avant de réessayer.");
     }
   });
