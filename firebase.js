@@ -7,7 +7,8 @@ import {
   set, 
   get, 
   child, 
-  onValue 
+  onValue,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -77,4 +78,48 @@ export function listenSection(sectionName, callback) {
   });
 }
 
+export async function addPlotHistoryEntry(plotId, entry) {
+  const parcellesRef = ref(db, `${BASE_PATH}/parcelles`);
+  const numericPlotId = Number(plotId);
+
+  const result = await runTransaction(parcellesRef, currentData => {
+    const data = currentData || { plots: [] };
+
+    if (!Array.isArray(data.plots)) {
+      data.plots = [];
+    }
+
+    let plot = data.plots.find(p => Number(p.id) === numericPlotId);
+
+    if (!plot) {
+      plot = {
+        id: numericPlotId,
+        history: []
+      };
+      data.plots.push(plot);
+    }
+
+    if (!Array.isArray(plot.history)) {
+      plot.history = [];
+    }
+
+    const alreadyExists = plot.history.some(h => h.id && h.id === entry.id);
+
+    if (!alreadyExists) {
+      plot.history.unshift({
+        ...entry,
+        id: entry.id || crypto.randomUUID(),
+        createdAt: entry.createdAt || Date.now()
+      });
+    }
+
+    return data;
+  });
+
+  if (!result.committed) {
+    throw new Error("Transaction Firebase non validée");
+  }
+
+  return result.snapshot.val();
+}
 console.log("🔥 Firebase initialisé — mode partagé");
